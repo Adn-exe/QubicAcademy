@@ -196,20 +196,33 @@ export function CircuitCanvas() {
               />
 
               {/* Drop zone indicators */}
-              {Array.from({ length: numSteps }, (_, s) => (
-                <rect
-                  key={`zone-${q}-${s}`}
-                  x={STEP_START_X + s * STEP_WIDTH - GATE_SIZE / 2}
-                  y={y - GATE_SIZE / 2}
-                  width={GATE_SIZE}
-                  height={GATE_SIZE}
-                  rx={6}
-                  fill="transparent"
-                  stroke="rgba(79, 209, 217, 0.12)"
-                  strokeWidth={1}
-                  strokeDasharray="4 4"
-                />
-              ))}
+              {Array.from({ length: numSteps }, (_, s) => {
+                const isTarget = !!selectedGate;
+                return (
+                  <rect
+                    key={`zone-${q}-${s}`}
+                    x={STEP_START_X + s * STEP_WIDTH - GATE_SIZE / 2}
+                    y={y - GATE_SIZE / 2}
+                    width={GATE_SIZE}
+                    height={GATE_SIZE}
+                    rx={6}
+                    fill={isTarget ? 'rgba(79, 209, 217, 0.08)' : 'transparent'}
+                    stroke={isTarget ? 'rgba(79, 209, 217, 0.6)' : 'rgba(79, 209, 217, 0.12)'}
+                    strokeWidth={isTarget ? 1.5 : 1}
+                    strokeDasharray={isTarget ? '3 3' : '4 4'}
+                    className={isTarget ? 'cursor-pointer hover:fill-[rgba(79,209,217,0.2)] transition-colors' : ''}
+                    onClick={(e) => {
+                      if (selectedGate) {
+                        e.stopPropagation();
+                        const gate = createGate(selectedGate as GateType, q, numQubits);
+                        if (gate) {
+                          addGate(gate, s < circuit.steps.length ? s : undefined);
+                        }
+                      }
+                    }}
+                  />
+                );
+              })}
             </g>
           );
         })}
@@ -269,7 +282,7 @@ function GateNode({
     const targetY = WIRE_Y_START + gate.target * WIRE_SPACING;
 
     return (
-      <g className="cursor-pointer" onDoubleClick={onRemove}>
+      <g className="cursor-pointer" onClick={(e) => { e.stopPropagation(); onRemove(); }} onDoubleClick={onRemove}>
         {/* Connector line */}
         <line
           x1={x}
@@ -292,7 +305,7 @@ function GateNode({
 
   if (gate.type === 'MEASURE') {
     return (
-      <g className="cursor-pointer" onDoubleClick={onRemove}>
+      <g className="cursor-pointer" onClick={(e) => { e.stopPropagation(); onRemove(); }} onDoubleClick={onRemove}>
         <rect
           x={x - GATE_SIZE / 2}
           y={y - GATE_SIZE / 2}
@@ -326,7 +339,7 @@ function GateNode({
   if ((gate.type === 'SWAP' || gate.type === 'CZ') && gate.target !== undefined) {
     const y2 = WIRE_Y_START + gate.target * WIRE_SPACING;
     return (
-      <g className="cursor-pointer" onDoubleClick={onRemove}>
+      <g className="cursor-pointer" onClick={(e) => { e.stopPropagation(); onRemove(); }} onDoubleClick={onRemove}>
         <line x1={x} y1={y} x2={x} y2={y2} stroke={gateColor} strokeWidth={2} opacity={0.8} />
         <text x={x} y={y + 5} textAnchor="middle" fill={gateColor} fontSize="16" fontWeight="bold">×</text>
         <text x={x} y={y2 + 5} textAnchor="middle" fill={gateColor} fontSize="16" fontWeight="bold">×</text>
@@ -336,7 +349,7 @@ function GateNode({
 
   // Standard single-qubit gate box
   return (
-    <g className="cursor-pointer" onDoubleClick={onRemove}>
+    <g className="cursor-pointer" onClick={(e) => { e.stopPropagation(); onRemove(); }} onDoubleClick={onRemove}>
       <rect
         x={x - GATE_SIZE / 2}
         y={y - GATE_SIZE / 2}

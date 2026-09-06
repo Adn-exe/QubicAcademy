@@ -375,7 +375,7 @@ export function ProblemsPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search quantum problems by title, topic, or objective..."
+                placeholder="Search quantum problems..."
                 className="w-full bg-[var(--panel)] border border-white/10 light:border-black/10 rounded-xl pl-10 pr-10 py-2.5 text-xs text-[var(--ink)] placeholder-slate-500 focus:outline-none focus:border-[var(--signal-cyan)] transition-colors"
               />
               {searchQuery && (
@@ -388,15 +388,15 @@ export function ProblemsPage() {
               )}
             </div>
 
-            {/* Filter Row Beneath Search */}
-            <div className="bg-[var(--panel)] border border-white/10 light:border-black/10 rounded-xl p-3 flex flex-wrap items-center gap-3 text-xs">
+            {/* Filter Row Beneath Search (Smooth Horizontal Chip Scroll on Mobile) */}
+            <div className="bg-[var(--panel)] border border-white/10 light:border-black/10 rounded-xl p-2.5 sm:p-3 flex items-center gap-2.5 text-xs overflow-x-auto no-scrollbar touch-pan-x">
               <div className="flex items-center gap-1.5 text-slate-400 text-[11px] font-mono shrink-0">
                 <Filter size={13} />
-                <span>Filters:</span>
+                <span className="hidden xs:inline">Filters:</span>
               </div>
 
               {/* Difficulty Multi-select buttons */}
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 shrink-0">
                 {(['Easy', 'Medium', 'Hard'] as ProblemDifficulty[]).map((diff) => {
                   const isSelected = selectedDifficulties.includes(diff);
                   const colorClass =
@@ -417,7 +417,7 @@ export function ProblemsPage() {
                       key={diff}
                       type="button"
                       onClick={() => toggleDifficulty(diff)}
-                      className={`px-2.5 py-1 rounded-md border text-[11px] font-mono transition-all cursor-pointer ${colorClass}`}
+                      className={`px-2.5 py-1 rounded-md border text-[11px] font-mono transition-all cursor-pointer whitespace-nowrap ${colorClass}`}
                     >
                       {diff}
                     </button>
@@ -425,10 +425,10 @@ export function ProblemsPage() {
                 })}
               </div>
 
-              <div className="w-[1px] h-4 bg-white/10 hidden sm:block" />
+              <div className="w-[1px] h-4 bg-white/10 shrink-0" />
 
               {/* Topic dropdown */}
-              <div className="flex items-center gap-1.5 flex-wrap">
+              <div className="flex items-center gap-1.5 shrink-0">
                 <span className="text-[11px] font-mono text-slate-500">Topic:</span>
                 <select
                   value={selectedTopic}
@@ -445,10 +445,10 @@ export function ProblemsPage() {
                 </select>
               </div>
 
-              <div className="w-[1px] h-4 bg-white/10 hidden sm:block" />
+              <div className="w-[1px] h-4 bg-white/10 shrink-0" />
 
               {/* Status filter */}
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 shrink-0">
                 <span className="text-[11px] font-mono text-slate-500">Status:</span>
                 <select
                   value={selectedStatus}
@@ -470,7 +470,7 @@ export function ProblemsPage() {
                 searchQuery.trim() !== '') && (
                 <button
                   onClick={handleClearFilters}
-                  className="ml-auto text-[11px] font-mono text-[var(--cryostat-gold)] hover:underline cursor-pointer"
+                  className="ml-auto text-[11px] font-mono text-[var(--cryostat-gold)] hover:underline cursor-pointer shrink-0 whitespace-nowrap"
                 >
                   Clear all
                 </button>

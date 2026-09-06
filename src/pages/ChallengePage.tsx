@@ -7,20 +7,21 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useCallback, useEffect } from 'react';
 import {
   ChevronLeft,
+  ChevronDown,
+  ChevronUp,
   CheckCircle,
   XCircle,
   Trophy,
   RotateCcw,
-  BookOpen,
-  Layers,
-  Cpu,
   BarChart3,
+  X,
 } from 'lucide-react';
 import { allChallenges } from '../data/challenges/challenges';
 import { useCircuitStore, useProgressStore } from '../core/store';
 import { CircuitCanvas } from '../components/CircuitBuilder/CircuitCanvas';
 import { GatePalette } from '../components/CircuitBuilder/GatePalette';
 import { CircuitControls } from '../components/CircuitBuilder/CircuitControls';
+import { MobileGateDock } from '../components/CircuitBuilder/MobileGateDock';
 import { VisualizationPanel } from '../components/Visualization/Charts';
 import { BlochSpherePanel } from '../components/Visualization/BlochSphere';
 import type { ChallengeResult } from '../core/types';
@@ -30,7 +31,8 @@ export function ChallengePage() {
   const navigate = useNavigate();
   const [result, setResult] = useState<'pass' | 'fail' | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [mobileTab, setMobileTab] = useState<'instructions' | 'gates' | 'circuit' | 'visuals'>('circuit');
+  const [mobileInstructionsOpen, setMobileInstructionsOpen] = useState(false);
+  const [showMobileVisuals, setShowMobileVisuals] = useState(false);
 
   const loadCircuit = useCircuitStore((s) => s.loadCircuit);
   const circuit = useCircuitStore((s) => s.circuit);
@@ -107,61 +109,65 @@ export function ChallengePage() {
       {/* Confetti */}
       {showConfetti && <ConfettiEffect />}
 
-      {/* Mobile Top Tab Switcher (< lg) */}
+      {/* ======================================================== */}
+      {/* MOBILE COLLAPSIBLE TASK HEADER (< lg) */}
+      {/* ======================================================== */}
       <div className="lg:hidden px-3 pt-2 shrink-0">
-        <div className="flex items-center p-1 bg-white/[0.04] light:bg-black/[0.04] border border-white/10 light:border-black/10 rounded-xl">
-          <button
-            onClick={() => setMobileTab('instructions')}
-            className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-mono font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-              mobileTab === 'instructions'
-                ? 'bg-[var(--signal-cyan)] text-[var(--void)] font-bold shadow'
-                : 'text-slate-400 hover:text-[var(--ink)]'
-            }`}
-          >
-            <BookOpen size={13} />
-            <span>Task</span>
-          </button>
-          <button
-            onClick={() => setMobileTab('gates')}
-            className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-mono font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-              mobileTab === 'gates'
-                ? 'bg-[var(--signal-cyan)] text-[var(--void)] font-bold shadow'
-                : 'text-slate-400 hover:text-[var(--ink)]'
-            }`}
-          >
-            <Layers size={13} />
-            <span>Gates</span>
-          </button>
-          <button
-            onClick={() => setMobileTab('circuit')}
-            className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-mono font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-              mobileTab === 'circuit'
-                ? 'bg-[var(--signal-cyan)] text-[var(--void)] font-bold shadow'
-                : 'text-slate-400 hover:text-[var(--ink)]'
-            }`}
-          >
-            <Cpu size={13} />
-            <span>Circuit</span>
-          </button>
-          <button
-            onClick={() => setMobileTab('visuals')}
-            className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-mono font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-              mobileTab === 'visuals'
-                ? 'bg-[var(--signal-cyan)] text-[var(--void)] font-bold shadow'
-                : 'text-slate-400 hover:text-[var(--ink)]'
-            }`}
-          >
-            <BarChart3 size={13} />
-            <span>Visuals</span>
-          </button>
+        <div className="bg-[#12172A] light:bg-[#FAF9F5] border border-white/10 light:border-slate-300 rounded-xl p-3 shadow-xs space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <button
+                onClick={() => navigate('/problems')}
+                className="p-1 rounded text-slate-400 hover:text-white"
+                title="Back to Problems"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-quantum-500 to-neon-cyan flex items-center justify-center shrink-0">
+                <Trophy size={13} className="text-white" />
+              </div>
+              <span className="text-xs font-bold font-heading truncate text-[var(--ink)]">
+                {challenge.title}
+              </span>
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[var(--cryostat-gold)]/20 text-[var(--cryostat-gold)] border border-[var(--cryostat-gold)]/30 shrink-0">
+                {challenge.difficulty}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setMobileInstructionsOpen((prev) => !prev)}
+              className="flex items-center gap-1 text-[11px] font-mono text-[var(--signal-cyan)] hover:underline shrink-0 cursor-pointer"
+            >
+              <span>{mobileInstructionsOpen ? 'Hide Task' : 'Task Details'}</span>
+              <ChevronDown
+                size={13}
+                className={`transition-transform duration-200 ${mobileInstructionsOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
+          </div>
+
+          {/* Collapsible Instructions Drawer */}
+          {mobileInstructionsOpen && (
+            <div className="pt-2.5 border-t border-white/10 light:border-slate-200 text-xs text-slate-300 light:text-slate-700 space-y-2 max-h-[42vh] overflow-y-auto animate-fade-in pr-1">
+              <div
+                className="prose prose-sm max-w-none text-xs leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: formatMarkdown(challenge.instructions) }}
+              />
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Left: Challenge instructions */}
-      <div className={`challenge-panel ${mobileTab === 'instructions' ? 'flex flex-1' : 'hidden'} lg:flex lg:w-[400px] lg:shrink-0 flex-col border-r border-white/10 transition-colors min-h-0 overflow-hidden`}>
+      {/* ======================================================== */}
+      {/* DESKTOP LEFT PANEL: Challenge instructions (lg+) */}
+      {/* ======================================================== */}
+      <div className="challenge-panel hidden lg:flex lg:w-[400px] lg:shrink-0 flex-col border-r border-white/10 transition-colors min-h-0 overflow-hidden">
         <div className="px-6 pt-4 pb-2 shrink-0">
-          <button onClick={() => navigate('/problems')} className="text-xs text-slate-400 hover:text-quantum-300 mb-3 inline-flex items-center gap-1 transition-colors cursor-pointer">
-            <ChevronLeft size={14} /> Back
+          <button
+            onClick={() => navigate('/problems')}
+            className="text-xs text-slate-400 hover:text-quantum-300 mb-3 inline-flex items-center gap-1 transition-colors cursor-pointer"
+          >
+            <ChevronLeft size={14} /> Back to Problems
           </button>
 
           <div className="flex items-center gap-3 mb-4">
@@ -178,7 +184,8 @@ export function ChallengePage() {
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-2">
-          <div className="prose prose-sm max-w-none
+          <div
+            className="prose prose-sm max-w-none
             [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mb-3
             [&_h2]:text-base [&_h2]:font-semibold [&_h2]:mt-4 [&_h2]:mb-2 [&_h2]:text-quantum-300
             [&_p]:mb-2.5 [&_p]:leading-relaxed
@@ -199,7 +206,7 @@ export function ChallengePage() {
               <CheckCircle size={20} className="text-[#4E9E7B]" />
               <div>
                 <p className="text-sm font-semibold text-[#4E9E7B]">Challenge Passed!</p>
-                <p className="text-xs text-[#4E9E7B]/80">You've created a Bell state successfully!</p>
+                <p className="text-xs text-[#4E9E7B]/80">Your circuit produced the target quantum state!</p>
               </div>
             </div>
           )}
@@ -220,7 +227,10 @@ export function ChallengePage() {
               Reset
             </button>
             <button
-              onClick={() => { runSimulation(); setTimeout(handleSubmit, 100); }}
+              onClick={() => {
+                runSimulation();
+                setTimeout(handleSubmit, 100);
+              }}
               className="btn-primary flex-1"
             >
               <CheckCircle size={14} />
@@ -230,26 +240,52 @@ export function ChallengePage() {
         </div>
       </div>
 
-      {/* Right: Circuit builder & Visualizer */}
-      <div className={`flex-1 flex-col min-w-0 ${mobileTab === 'instructions' ? 'hidden lg:flex' : 'flex'}`}>
-        {/* Controls - visible on desktop and circuit tab */}
-        <div className={`px-3 py-2 ${mobileTab === 'circuit' ? 'block' : 'hidden lg:block'}`}>
+      {/* ======================================================== */}
+      {/* RIGHT/CENTER: Circuit Builder, Controls & Visualizer */}
+      {/* ======================================================== */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Controls - visible on all screens */}
+        <div className="px-3 py-2 shrink-0">
           <CircuitControls onToggleCode={() => {}} showCode={false} />
         </div>
 
-        <div className="flex-1 flex overflow-hidden px-3 pb-3 gap-2">
-          {/* Gate Palette */}
-          <div className={`${mobileTab === 'gates' ? 'flex flex-1' : 'hidden'} lg:flex lg:w-[210px] lg:shrink-0 glass-light rounded-xl overflow-hidden flex-col`}>
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden px-2.5 sm:px-3 pb-2.5 sm:pb-3 gap-2">
+          {/* Gate Palette (Desktop lg+) */}
+          <div className="hidden lg:flex lg:w-[210px] lg:shrink-0 glass-light rounded-xl overflow-hidden flex-col">
             <GatePalette />
           </div>
 
-          {/* Center Canvas */}
-          <div className={`${mobileTab === 'circuit' ? 'flex flex-1' : 'hidden'} lg:flex lg:flex-1 flex-col gap-2 min-w-0`}>
-            <div className="flex-1 min-h-[200px]">
+          {/* Center Canvas + Mobile Gate Dock */}
+          <div className="flex-1 flex flex-col min-w-0 glass-light rounded-xl overflow-hidden border border-white/10">
+            <div className="flex-1 min-h-[220px] flex flex-col">
               <CircuitCanvas />
             </div>
-            {/* Desktop Visualizer Sub-panel */}
-            <div className="hidden lg:flex h-[285px] gap-2">
+
+            {/* Visuals Pull-up Bar on Mobile (< lg) */}
+            <div className="lg:hidden flex items-center justify-between px-3 py-1.5 bg-[#080B14] light:bg-[#EAE8E0] border-t border-white/10 light:border-slate-300 text-xs font-mono shrink-0">
+              <div className="flex items-center gap-2 text-slate-300 light:text-slate-700 truncate">
+                <BarChart3 size={13} className="text-[var(--signal-cyan)] shrink-0" />
+                <span className="truncate">
+                  {simulationResult ? 'Sim Result Ready' : 'Sim: Not run yet'}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowMobileVisuals(true)}
+                className="flex items-center gap-1 text-[var(--signal-cyan)] hover:underline font-bold shrink-0 cursor-pointer"
+              >
+                <span>View Visuals</span>
+                <ChevronUp size={14} />
+              </button>
+            </div>
+
+            {/* Mobile Gate Dock (< lg) */}
+            <div className="lg:hidden">
+              <MobileGateDock />
+            </div>
+
+            {/* Desktop Visualizer Sub-panel (lg+) */}
+            <div className="hidden lg:flex h-[285px] gap-2 p-2 border-t border-white/10">
               <div className="flex-1 glass-light rounded-xl overflow-hidden shadow-xs">
                 <VisualizationPanel result={simulationResult} numQubits={circuit.numQubits} />
               </div>
@@ -258,24 +294,14 @@ export function ChallengePage() {
               </div>
             </div>
           </div>
-
-          {/* Mobile Visualizer Panel */}
-          <div className={`${mobileTab === 'visuals' ? 'flex flex-1 overflow-y-auto' : 'hidden'} lg:hidden flex-col gap-2`}>
-            <div className="glass-light rounded-xl overflow-hidden shrink-0">
-              <BlochSpherePanel blochVectors={simulationResult?.blochVectors ?? []} />
-            </div>
-            <div className="flex-1 glass-light rounded-xl overflow-hidden min-h-[220px]">
-              <VisualizationPanel result={simulationResult} numQubits={circuit.numQubits} />
-            </div>
-          </div>
         </div>
 
-        {/* Mobile Sticky Action Bar */}
+        {/* Mobile Sticky Submit Bar (< lg) */}
         <div className="lg:hidden p-3 border-t border-white/10 bg-[var(--void)]/95 backdrop-blur shrink-0 space-y-2">
           {result === 'pass' && (
             <div className="flex items-center gap-2 p-2 rounded-lg bg-[#4E9E7B]/15 border border-[#4E9E7B]/40 text-xs text-[#4E9E7B]">
               <CheckCircle size={16} className="shrink-0" />
-              <span>Challenge Passed! Bell state created.</span>
+              <span>Challenge Passed! Great job!</span>
             </div>
           )}
           {result === 'fail' && (
@@ -290,7 +316,10 @@ export function ChallengePage() {
               Reset
             </button>
             <button
-              onClick={() => { runSimulation(); setTimeout(handleSubmit, 100); }}
+              onClick={() => {
+                runSimulation();
+                setTimeout(handleSubmit, 100);
+              }}
               className="btn-primary flex-1 py-2 text-xs"
             >
               <CheckCircle size={13} />
@@ -299,6 +328,39 @@ export function ChallengePage() {
           </div>
         </div>
       </div>
+
+      {/* Slide-up Visuals Modal Sheet on Mobile (< lg) */}
+      {showMobileVisuals && (
+        <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end bg-black/70 backdrop-blur-xs animate-fade-in">
+          <div className="flex-1" onClick={() => setShowMobileVisuals(false)} />
+          <div className="w-full max-h-[82vh] bg-[#0E1322] light:bg-[#FAF9F5] border-t border-white/20 light:border-slate-300 rounded-t-3xl p-4 sm:p-5 space-y-4 shadow-2xl overflow-y-auto flex flex-col">
+            <div className="flex items-center justify-between pb-2 border-b border-white/10 light:border-slate-200">
+              <div className="flex items-center gap-2">
+                <BarChart3 size={17} className="text-[var(--signal-cyan)]" />
+                <h3 className="text-sm font-heading font-bold text-[var(--ink)]">
+                  Quantum State & Bloch Sphere
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowMobileVisuals(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white light:hover:text-black hover:bg-white/10"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="glass-light rounded-xl overflow-hidden border border-white/10">
+                <BlochSpherePanel blochVectors={simulationResult?.blochVectors ?? []} />
+              </div>
+              <div className="glass-light rounded-xl overflow-hidden min-h-[220px] border border-white/10">
+                <VisualizationPanel result={simulationResult} numQubits={circuit.numQubits} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

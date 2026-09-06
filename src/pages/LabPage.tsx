@@ -13,13 +13,13 @@ import {
   ArrowLeft,
   X,
   RotateCcw,
-  Layers,
-  Cpu,
   BarChart3,
+  ChevronUp,
 } from 'lucide-react';
 import { CircuitCanvas } from '../components/CircuitBuilder/CircuitCanvas';
 import { GatePalette } from '../components/CircuitBuilder/GatePalette';
 import { CircuitControls } from '../components/CircuitBuilder/CircuitControls';
+import { MobileGateDock } from '../components/CircuitBuilder/MobileGateDock';
 import { CodeEditorPanel } from '../components/CodeEditor/CodeEditorPanel';
 import { VisualizationPanel } from '../components/Visualization/Charts';
 import { BlochSpherePanel } from '../components/Visualization/BlochSphere';
@@ -70,7 +70,7 @@ export function LabPage() {
     message: string;
   }>({ status: null, message: '' });
   const [showConfetti, setShowConfetti] = useState(false);
-  const [mobileTab, setMobileTab] = useState<'palette' | 'circuit' | 'visuals'>('circuit');
+  const [showMobileVisuals, setShowMobileVisuals] = useState(false);
 
   const simulationResult = useCircuitStore((s) => s.simulationResult);
   const circuit = useCircuitStore((s) => s.circuit);
@@ -278,69 +278,53 @@ export function LabPage() {
         <CircuitControls onToggleCode={() => setShowCode(!showCode)} showCode={showCode} />
       </div>
 
-      {/* Mobile View Switcher (< lg) */}
-      <div className="lg:hidden px-4 pb-2 shrink-0">
-        <div className="flex items-center p-1 bg-white/[0.04] light:bg-black/[0.04] border border-white/10 light:border-black/10 rounded-xl">
-          <button
-            onClick={() => setMobileTab('palette')}
-            className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-mono font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-              mobileTab === 'palette'
-                ? 'bg-[var(--signal-cyan)] text-[var(--void)] font-bold shadow'
-                : 'text-slate-400 hover:text-[var(--ink)]'
-            }`}
-          >
-            <Layers size={13} />
-            <span>Gates</span>
-          </button>
-          <button
-            onClick={() => setMobileTab('circuit')}
-            className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-mono font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-              mobileTab === 'circuit'
-                ? 'bg-[var(--signal-cyan)] text-[var(--void)] font-bold shadow'
-                : 'text-slate-400 hover:text-[var(--ink)]'
-            }`}
-          >
-            <Cpu size={13} />
-            <span>Circuit</span>
-          </button>
-          <button
-            onClick={() => setMobileTab('visuals')}
-            className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-mono font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-              mobileTab === 'visuals'
-                ? 'bg-[var(--signal-cyan)] text-[var(--void)] font-bold shadow'
-                : 'text-slate-400 hover:text-[var(--ink)]'
-            }`}
-          >
-            <BarChart3 size={13} />
-            <span>Visuals</span>
-          </button>
-        </div>
-      </div>
-
       {/* Main workspace */}
-      <div className="flex-1 flex overflow-hidden px-4 pb-4 gap-3">
-        {/* Left: Gate Palette */}
-        <div className={`${mobileTab === 'palette' ? 'flex flex-1' : 'hidden'} lg:flex lg:w-[220px] lg:shrink-0 glass-light rounded-xl overflow-hidden flex-col`}>
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden px-2.5 sm:px-4 pb-2.5 sm:pb-4 gap-3">
+        {/* Left: Gate Palette (Desktop lg+) */}
+        <div className="hidden lg:flex lg:w-[220px] lg:shrink-0 glass-light rounded-xl overflow-hidden flex-col">
           <GatePalette />
         </div>
 
-        {/* Center: Circuit Canvas + Code Editor */}
-        <div className={`${mobileTab === 'circuit' ? 'flex flex-1' : 'hidden'} lg:flex lg:flex-1 flex-col gap-3 min-w-0`}>
+        {/* Center: Circuit Canvas + Code Editor + Mobile Gate Dock */}
+        <div className="flex-1 flex flex-col min-w-0 glass-light rounded-xl overflow-hidden border border-white/10">
           {/* Circuit Canvas */}
-          <div className={`${showCode ? 'h-1/2' : 'flex-1'} min-h-[200px]`}>
+          <div className={`${showCode ? 'h-1/2' : 'flex-1'} min-h-[220px] flex flex-col`}>
             <CircuitCanvas />
           </div>
 
           {/* Code Editor (togglable) */}
           {showCode && (
-            <div className="h-1/2 glass-light rounded-xl overflow-hidden animate-slide-in-up">
+            <div className="h-1/2 glass-light border-t border-white/10 overflow-hidden animate-slide-in-up">
               <CodeEditorPanel />
             </div>
           )}
+
+          {/* Visuals Pull-up Bar on Mobile (< lg) */}
+          <div className="lg:hidden flex items-center justify-between px-3 py-1.5 bg-[#080B14] light:bg-[#EAE8E0] border-t border-white/10 light:border-slate-300 text-xs font-mono shrink-0">
+            <div className="flex items-center gap-2 text-slate-300 light:text-slate-700 truncate">
+              <BarChart3 size={13} className="text-[var(--signal-cyan)] shrink-0" />
+              <span className="truncate">
+                {simulationResult ? 'Simulation Output Ready' : 'Sim: Not run yet'}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowMobileVisuals(true)}
+              className="flex items-center gap-1 text-[var(--signal-cyan)] hover:underline font-bold shrink-0 cursor-pointer"
+            >
+              <span>View Visuals</span>
+              <ChevronUp size={14} />
+            </button>
+          </div>
+
+          {/* Mobile Gate Dock (< lg) */}
+          <div className="lg:hidden">
+            <MobileGateDock />
+          </div>
         </div>
 
-        {/* Right: Visualization Panel */}
-        <div className={`${mobileTab === 'visuals' ? 'flex flex-1 overflow-y-auto' : 'hidden'} lg:flex lg:w-[340px] lg:shrink-0 flex-col gap-3`}>
+        {/* Right: Visualization Panel (Desktop lg+) */}
+        <div className="hidden lg:flex lg:w-[340px] lg:shrink-0 flex-col gap-3">
           {/* Bloch Spheres */}
           <div className="glass-light rounded-xl overflow-hidden shrink-0 border border-white/10">
             <BlochSpherePanel
@@ -357,6 +341,39 @@ export function LabPage() {
           </div>
         </div>
       </div>
+
+      {/* Slide-up Visuals Modal Sheet on Mobile (< lg) */}
+      {showMobileVisuals && (
+        <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end bg-black/70 backdrop-blur-xs animate-fade-in">
+          <div className="flex-1" onClick={() => setShowMobileVisuals(false)} />
+          <div className="w-full max-h-[82vh] bg-[#0E1322] light:bg-[#FAF9F5] border-t border-white/20 light:border-slate-300 rounded-t-3xl p-4 sm:p-5 space-y-4 shadow-2xl overflow-y-auto flex flex-col">
+            <div className="flex items-center justify-between pb-2 border-b border-white/10 light:border-slate-200">
+              <div className="flex items-center gap-2">
+                <BarChart3 size={17} className="text-[var(--signal-cyan)]" />
+                <h3 className="text-sm font-heading font-bold text-[var(--ink)]">
+                  Quantum State & Bloch Sphere
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowMobileVisuals(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white light:hover:text-black hover:bg-white/10"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="glass-light rounded-xl overflow-hidden border border-white/10">
+                <BlochSpherePanel blochVectors={simulationResult?.blochVectors ?? []} />
+              </div>
+              <div className="glass-light rounded-xl overflow-hidden min-h-[220px] border border-white/10">
+                <VisualizationPanel result={simulationResult} numQubits={circuit.numQubits} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

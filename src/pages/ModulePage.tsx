@@ -337,11 +337,11 @@ Please calibrate to my current learning level: **${userLevel}** (${completedCoun
           <div className="flex items-center gap-1 bg-[#0A0E1A] light:bg-[#EAE8E0] p-1 rounded-xl border border-white/10 light:border-slate-300">
             <button
               onClick={() => openStudyDrawer('syllabus')}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-slate-300 light:text-slate-700 hover:text-white light:hover:text-black hover:bg-white/5 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium text-slate-300 light:text-slate-700 hover:text-white light:hover:text-black hover:bg-white/5 transition-colors cursor-pointer"
               title="Open Syllabus & Course Path"
             >
               <BookOpen size={13} className="text-[#4FD1D9]" />
-              <span className="hidden sm:inline">Syllabus</span>
+              <span className="hidden md:inline">Syllabus</span>
               <span className="text-[10px] font-mono text-slate-400">
                 ({completedCount}/{totalModuleCount})
               </span>
@@ -349,20 +349,20 @@ Please calibrate to my current learning level: **${userLevel}** (${completedCoun
 
             <button
               onClick={() => openStudyDrawer('glossary')}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-slate-300 light:text-slate-700 hover:text-white light:hover:text-black hover:bg-white/5 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium text-slate-300 light:text-slate-700 hover:text-white light:hover:text-black hover:bg-white/5 transition-colors cursor-pointer"
               title="Open Key Terms Glossary"
             >
               <Bookmark size={13} className="text-[#D9A441]" />
-              <span className="hidden sm:inline">Glossary</span>
+              <span className="hidden md:inline">Glossary</span>
             </button>
 
             <button
               onClick={() => openStudyDrawer('notes')}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-slate-300 light:text-slate-700 hover:text-white light:hover:text-black hover:bg-white/5 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium text-slate-300 light:text-slate-700 hover:text-white light:hover:text-black hover:bg-white/5 transition-colors cursor-pointer"
               title="Open Notebook"
             >
               <FileText size={13} className="text-emerald-400" />
-              <span className="hidden sm:inline">Notes</span>
+              <span className="hidden md:inline">Notes</span>
             </button>
           </div>
 
@@ -572,7 +572,7 @@ Please calibrate to my current learning level: **${userLevel}** (${completedCoun
           ref={contentRef}
           className="flex-1 overflow-y-auto paper-surface relative flex flex-col items-center w-full"
         >
-          <div className="w-full px-6 sm:px-12 py-10 space-y-10 text-left max-w-4xl">
+          <div className="w-full px-4 sm:px-8 md:px-12 py-6 sm:py-10 space-y-8 sm:space-y-10 text-left max-w-4xl">
             {/* 1. Module Title & Meta */}
             <div className="border-b border-white/10 light:border-slate-200 pb-6">
               <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
@@ -709,7 +709,7 @@ Please calibrate to my current learning level: **${userLevel}** (${completedCoun
             <hr className="border-white/10 my-8 opacity-40" />
 
             {/* 3. "Try It Yourself" Interactive Circuit Embed */}
-            <div className="rounded-2xl border border-white/10 bg-[#12172A] p-6 space-y-4 shadow-xl">
+            <div className="rounded-2xl border border-white/10 bg-[#12172A] p-4 sm:p-6 space-y-4 shadow-xl">
               <div className="flex items-center justify-between pb-2 border-b border-white/10">
                 <h3 className="text-lg font-bold font-heading flex items-center gap-2 text-inherit">
                   <BookOpen size={19} className="text-[#D9A441]" />
@@ -726,7 +726,7 @@ Please calibrate to my current learning level: **${userLevel}** (${completedCoun
                 </button>
               </div>
 
-              <div className="rounded-xl overflow-hidden border border-white/10 bg-[#0A0E1A] p-5 text-slate-100 space-y-4 animate-fade-in">
+              <div className="rounded-xl overflow-hidden border border-white/10 bg-[#0A0E1A] p-3 sm:p-5 text-slate-100 space-y-4 animate-fade-in">
                 {/* Top Bar with Status & Run CTA */}
                 <div className="flex items-center justify-between pb-3 border-b border-white/10">
                   <div className="flex items-center gap-3">

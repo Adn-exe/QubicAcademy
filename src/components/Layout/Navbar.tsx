@@ -248,21 +248,21 @@ export function Navbar() {
   }
 
   return (
-    <div className="sticky top-0 z-50 w-full px-3 sm:px-6 lg:px-8 pt-3 sm:pt-4 pb-3 sm:pb-3.5 pointer-events-none">
+    <div className="sticky top-0 z-50 w-full px-2.5 sm:px-6 lg:px-8 pt-2 sm:pt-4 pb-2 sm:pb-3.5 pointer-events-none">
       <header
-        className={`max-w-7xl mx-auto pointer-events-auto rounded-[22px] transition-all duration-300 ${
+        className={`max-w-7xl mx-auto pointer-events-auto rounded-[20px] sm:rounded-[22px] transition-all duration-300 ${
           isScrolled
-            ? 'py-2.5 sm:py-3 px-5 sm:px-7 bg-[#12172A]/80 light:bg-[#E2E0D8]/85 backdrop-blur-2xl backdrop-saturate-150 border border-white/[0.14] light:border-black/[0.09] shadow-[0_12px_36px_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.1)] light:shadow-[0_10px_30px_rgba(0,0,0,0.06),inset_0_1px_0_0_rgba(255,255,255,0.4)]'
-            : 'py-3.5 sm:py-4 px-6 sm:px-8 bg-[#12172A]/70 light:bg-[#E2E0D8]/80 backdrop-blur-2xl backdrop-saturate-150 border border-white/[0.16] light:border-black/[0.08] shadow-[0_16px_44px_rgba(0,0,0,0.35),inset_0_1px_0_0_rgba(255,255,255,0.12)] light:shadow-[0_12px_36px_rgba(0,0,0,0.05),inset_0_1px_0_0_rgba(255,255,255,0.5)]'
+            ? 'py-2 sm:py-3 px-3.5 sm:px-7 bg-[#12172A]/85 light:bg-[#E2E0D8]/90 backdrop-blur-2xl backdrop-saturate-150 border border-white/[0.14] light:border-black/[0.09] shadow-[0_12px_36px_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.1)] light:shadow-[0_10px_30px_rgba(0,0,0,0.06),inset_0_1px_0_0_rgba(255,255,255,0.4)]'
+            : 'py-2.5 sm:py-4 px-4 sm:px-8 bg-[#12172A]/75 light:bg-[#E2E0D8]/85 backdrop-blur-2xl backdrop-saturate-150 border border-white/[0.16] light:border-black/[0.08] shadow-[0_16px_44px_rgba(0,0,0,0.35),inset_0_1px_0_0_rgba(255,255,255,0.12)] light:shadow-[0_12px_36px_rgba(0,0,0,0.05),inset_0_1px_0_0_rgba(255,255,255,0.5)]'
         }`}
       >
-        <div className="flex items-center justify-between gap-4 sm:gap-6">
+        <div className="flex items-center justify-between gap-3 sm:gap-6">
           {/* ======================================================== */}
           {/* LEFT: Circuit-node geometric Logo + Wordmark */}
           {/* ======================================================== */}
           <button
             onClick={() => navigate('/')}
-            className="flex items-center gap-3 group cursor-pointer text-left focus:outline-none shrink-0"
+            className="flex items-center gap-2.5 sm:gap-3 group cursor-pointer text-left focus:outline-none shrink-0"
             title="Qubiq Academy Home"
           >
             {/* Geometric Circuit-Node Orbit Motif */}
@@ -443,8 +443,8 @@ export function Navbar() {
           {/* RIGHT: Announcement -> Theme toggle -> Profile badge */}
           {/* ======================================================== */}
           <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
-            {/* 1. Announcement button & Message Inbox Popover */}
-            <div className="relative" ref={inboxRef}>
+            {/* 1. Announcement button & Message Inbox Popover (Desktop md+) */}
+            <div className="relative hidden md:block" ref={inboxRef}>
               <button
                 type="button"
                 onClick={() => setAnnouncementInboxOpen((prev) => !prev)}
@@ -606,11 +606,11 @@ export function Navbar() {
             )}
           </div>
 
-            {/* 2. Theme toggle */}
+            {/* 2. Theme toggle (Desktop md+) */}
             <button
               type="button"
               onClick={() => setIsLightMode((prev) => !prev)}
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-slate-300 light:text-slate-700 hover:text-[var(--ink)] bg-white/[0.04] light:bg-black/5 border border-white/10 light:border-black/10 hover:border-white/25 hover:bg-white/[0.08] transition-all cursor-pointer shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]"
+              className="hidden md:flex w-9 h-9 sm:w-10 sm:h-10 rounded-full items-center justify-center text-slate-300 light:text-slate-700 hover:text-[var(--ink)] bg-white/[0.04] light:bg-black/5 border border-white/10 light:border-black/10 hover:border-white/25 hover:bg-white/[0.08] transition-all cursor-pointer shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]"
               title={`Switch to ${isLightMode ? 'Dark' : 'Light'} mode`}
               aria-label="Toggle theme"
             >
@@ -699,7 +699,46 @@ export function Navbar() {
         {/* RESPONSIVE: Mobile Slide-down Panel */}
         {/* ======================================================== */}
         {mobileMenuOpen && (
-          <div className="md:hidden mt-3.5 pt-3.5 border-t border-white/10 light:border-black/10 space-y-1.5 animate-fade-in">
+          <div className="md:hidden mt-3.5 pt-3.5 border-t border-white/10 light:border-black/10 space-y-2 animate-fade-in">
+            {/* Quick Utilities: Announcements & Theme Toggle */}
+            <div className="grid grid-cols-2 gap-2 pb-2.5 border-b border-white/10 light:border-black/10">
+              <button
+                onClick={() => {
+                  navigate('/announcements');
+                  setMobileMenuOpen(false);
+                }}
+                className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-mono font-medium bg-white/[0.04] light:bg-black/5 border border-white/10 light:border-black/10 text-slate-300 light:text-slate-700 cursor-pointer"
+              >
+                <span className="flex items-center gap-1.5">
+                  <Bell size={13} className="text-[var(--cryostat-gold)]" />
+                  <span>Updates</span>
+                </span>
+                {unreadAnnouncements > 0 && (
+                  <span className="px-1.5 py-0.2 rounded-full bg-[var(--cryostat-gold)] text-[var(--void)] text-[10px] font-bold">
+                    {unreadAnnouncements}
+                  </span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsLightMode((prev) => !prev)}
+                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-mono font-medium bg-white/[0.04] light:bg-black/5 border border-white/10 light:border-black/10 text-slate-300 light:text-slate-700 cursor-pointer"
+              >
+                {isLightMode ? (
+                  <>
+                    <Moon size={13} className="text-[var(--cryostat-gold)]" />
+                    <span>Dark Mode</span>
+                  </>
+                ) : (
+                  <>
+                    <Sun size={13} className="text-[var(--signal-cyan)]" />
+                    <span>Light Mode</span>
+                  </>
+                )}
+              </button>
+            </div>
+
             {/* Overview */}
             <button
               onClick={() => {
