@@ -1,0 +1,751 @@
+@import "tailwindcss";
+@custom-variant light (&:where(.light-theme, .light-theme *));
+
+/* ============================================================
+   QuantumLearn AI — Bespoke Quantum Design System
+   Exact Tokens Specification:
+   --void: #0A0E1A (dark mode page background)
+   --panel: #12172A (dark mode card/sidebar surface)
+   --paper: #F7F6F1 (light mode page background — lesson/tutor)
+   --ink: #1B1E24 (light mode primary text)
+   --signal-cyan: #4FD1D9 (state |0⟩ / idle / default)
+   --cryostat-gold: #D9A441 (state |1⟩ / active / primary actions)
+   --error: #C1543A (muted rust)
+   --success: #4E9E7B (desaturated teal-green)
+   ============================================================ */
+
+:root {
+  --void: #0A0E1A;
+  --panel: #12172A;
+  --panel-elevated: #182038;
+  --panel-border: rgba(255, 255, 255, 0.1);
+  --paper: #0F1424; /* Seamless dark reading surface in dark mode */
+  --paper-subtle: #151C30;
+  --paper-border: rgba(79, 209, 217, 0.14);
+  --ink: #E2E8F0;    /* Crisp primary text in dark mode */
+  --ink-secondary: #94A3B8;
+  --text-secondary: #94A3B8;
+  --signal-cyan: #4FD1D9;
+  --cryostat-gold: #D9A441;
+  --error: #C1543A;
+  --success: #4E9E7B;
+}
+
+html.light-theme {
+  --void: #EDECE7;
+  --panel: #E2E0D8;
+  --panel-elevated: #D8D5CC;
+  --panel-border: rgba(0, 0, 0, 0.1);
+  --paper: #F7F6F1; /* Warm paper reading surface in light mode */
+  --paper-subtle: #EFEFE9;
+  --paper-border: #D1D0C7;
+  --ink: #1B1E24;    /* Deep charcoal text in light mode */
+  --ink-secondary: #4A5568;
+  --text-secondary: #4A5568;
+}
+
+@theme {
+  /* Dynamic Responsive Tokens */
+  --color-void: var(--void);
+  --color-panel: var(--panel);
+  --color-panel-elevated: var(--panel-elevated);
+  --color-paper: var(--paper);
+  --color-paper-subtle: var(--paper-subtle);
+  --color-ink: var(--ink);
+  --color-ink-secondary: var(--ink-secondary);
+  --color-text-secondary: var(--text-secondary);
+  --color-panel-border: var(--panel-border);
+  --color-signal-cyan: #4FD1D9;
+  --color-cryostat-gold: #D9A441;
+  --color-error: #C1543A;
+  --color-success: #4E9E7B;
+
+  /* Backward Compatible Semantic Mappings */
+  --color-space-950: #0A0E1A;
+  --color-space-900: #12172A;
+  --color-space-850: #161D33;
+  --color-space-800: #1B233D;
+  --color-space-700: #263152;
+
+  --color-quantum-300: #7FE5EC;
+  --color-quantum-400: #4FD1D9;
+  --color-quantum-500: #4FD1D9;
+  --color-quantum-600: #35B0B8;
+  --color-quantum-700: #20878E;
+  --color-quantum-900: #12172A;
+
+  --color-neon-cyan: #4FD1D9;
+  --color-neon-green: #4E9E7B;
+  --color-neon-orange: #D9A441;
+
+  --color-surface: #12172A;
+  --color-surface-card: #12172A;
+
+  /* Typography */
+  --font-heading: 'Space Grotesk', 'Outfit', -apple-system, sans-serif;
+  --font-display: 'Outfit', -apple-system, sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+@layer base {
+  h1, h2, h3, h4, .font-heading {
+    font-family: var(--font-heading);
+    letter-spacing: -0.025em;
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--void);
+    color: #E2E8F0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  html.light-theme body {
+    background-color: #EDECE7;
+    color: var(--ink);
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--void);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #263152;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--signal-cyan);
+}
+
+/* Glass & Panel Classes */
+.glass {
+  background: rgba(18, 23, 42, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(79, 209, 217, 0.12);
+}
+
+html.light-theme .glass {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.glass-light {
+  background: rgba(18, 23, 42, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(79, 209, 217, 0.1);
+}
+
+html.light-theme .glass-light {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.glass-card {
+  background: var(--panel);
+  border: 1px solid rgba(79, 209, 217, 0.12);
+  border-radius: 1rem;
+  transition: all 0.25s ease;
+}
+
+html.light-theme .glass-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E0D8;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+.glass-card:hover {
+  border-color: rgba(79, 209, 217, 0.35);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+  transform: translateY(-2px);
+}
+
+html.light-theme .glass-card:hover {
+  border-color: var(--cryostat-gold);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+}
+
+/* Explanation Paper Surface */
+.paper-surface {
+  background-color: var(--paper);
+  color: var(--ink);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.paper-subtle {
+  background-color: var(--paper-subtle);
+  border-color: var(--paper-border);
+}
+
+.paper-card {
+  background-color: var(--panel);
+  border: 1px solid var(--paper-border);
+  color: var(--ink);
+  transition: all 0.2s ease;
+}
+
+html.light-theme .paper-card {
+  background-color: #FFFFFF;
+  border-color: #E2E0D8;
+  color: #1B1E24;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* ============================================================
+   Analogy & Real-World Callout Cards (Curriculum Enhancements)
+   ============================================================ */
+.analogy-card {
+  margin: 1.75rem 0;
+  padding: 1.35rem 1.5rem;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, rgba(217, 164, 65, 0.09) 0%, rgba(26, 32, 54, 0.9) 45%, rgba(18, 23, 42, 0.96) 100%);
+  border: 1px solid rgba(217, 164, 65, 0.35);
+  border-left: 4px solid var(--cryostat-gold);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  position: relative;
+}
+
+.analogy-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(217, 164, 65, 0.2);
+  color: var(--cryostat-gold);
+  border: 1px solid rgba(217, 164, 65, 0.4);
+  margin-bottom: 0.5rem;
+}
+
+.analogy-title {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-bottom: 0.65rem;
+  letter-spacing: -0.015em;
+}
+
+.analogy-content {
+  font-size: 0.875rem;
+  line-height: 1.68;
+  color: #CBD5E1;
+}
+
+.analogy-content em {
+  color: var(--cryostat-gold);
+  font-style: italic;
+  font-weight: 600;
+}
+
+.analogy-content strong {
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+/* Light theme for Analogy Card */
+html.light-theme .analogy-card {
+  background: linear-gradient(135deg, #FFFDF7 0%, #FEF8EA 45%, #FBF2DC 100%) !important;
+  border: 1px solid #E8D7A8 !important;
+  border-left: 4px solid #D9A441 !important;
+  box-shadow: 0 4px 18px rgba(217, 164, 65, 0.12) !important;
+}
+
+html.light-theme .analogy-badge {
+  background: rgba(217, 164, 65, 0.25) !important;
+  color: #92400E !important;
+  border-color: rgba(217, 164, 65, 0.55) !important;
+}
+
+html.light-theme .analogy-title {
+  color: #78350F !important;
+}
+
+html.light-theme .analogy-content {
+  color: #451A03 !important;
+}
+
+html.light-theme .analogy-content strong {
+  color: #78350F !important;
+}
+
+html.light-theme .analogy-content em {
+  color: #B45309 !important;
+}
+
+/* Real-World Hardware & Applications Card */
+.hardware-card {
+  margin: 1.75rem 0;
+  padding: 1.35rem 1.5rem;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, rgba(79, 209, 217, 0.08) 0%, rgba(20, 28, 50, 0.9) 45%, rgba(18, 23, 42, 0.96) 100%);
+  border: 1px solid rgba(79, 209, 217, 0.3);
+  border-left: 4px solid var(--signal-cyan);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  position: relative;
+}
+
+.hardware-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(79, 209, 217, 0.18);
+  color: var(--signal-cyan);
+  border: 1px solid rgba(79, 209, 217, 0.4);
+  margin-bottom: 0.5rem;
+}
+
+.hardware-title {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-bottom: 0.65rem;
+  letter-spacing: -0.015em;
+}
+
+.hardware-content {
+  font-size: 0.875rem;
+  line-height: 1.68;
+  color: #CBD5E1;
+}
+
+.hardware-content strong {
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.hardware-content li {
+  margin-bottom: 0.5rem;
+}
+
+/* Light theme for Hardware Card */
+html.light-theme .hardware-card {
+  background: linear-gradient(135deg, #F0FDFA 0%, #E6FAF7 45%, #DCF7F3 100%) !important;
+  border: 1px solid #99F6E4 !important;
+  border-left: 4px solid #0D9488 !important;
+  box-shadow: 0 4px 18px rgba(13, 148, 136, 0.09) !important;
+}
+
+html.light-theme .hardware-badge {
+  background: rgba(13, 148, 136, 0.16) !important;
+  color: #0F766E !important;
+  border-color: rgba(13, 148, 136, 0.4) !important;
+}
+
+html.light-theme .hardware-title {
+  color: #115E59 !important;
+}
+
+html.light-theme .hardware-content {
+  color: #042F2E !important;
+}
+
+html.light-theme .hardware-content strong {
+  color: #115E59 !important;
+}
+
+/* ============================================================
+   Challenge Section Instructions Box (Rock-Solid Light Theme)
+   ============================================================ */
+.challenge-panel {
+  background-color: var(--panel);
+  border-color: rgba(79, 209, 217, 0.2);
+  color: var(--ink);
+}
+
+html.light-theme .challenge-panel {
+  background-color: #F7F6F1 !important;
+  border-color: #D1D0C7 !important;
+  color: #1B1E24 !important;
+}
+
+html.light-theme .challenge-panel h1 {
+  color: #0F172A !important;
+}
+
+html.light-theme .challenge-panel h2 {
+  color: #0D9488 !important;
+}
+
+html.light-theme .challenge-panel p,
+html.light-theme .challenge-panel li {
+  color: #1E293B !important;
+}
+
+html.light-theme .challenge-panel strong {
+  color: #0F172A !important;
+  font-weight: 700 !important;
+}
+
+html.light-theme .challenge-panel code {
+  background-color: #E2E8F0 !important;
+  color: #0F172A !important;
+  border: 1px solid #CBD5E1 !important;
+}
+
+html.light-theme .challenge-panel details {
+  background-color: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+html.light-theme .challenge-panel details p {
+  color: #334155 !important;
+}
+
+html.light-theme .challenge-panel summary {
+  color: #0D9488 !important;
+}
+
+html.light-theme .challenge-panel .difficulty-tag {
+  background-color: #E2E8F0 !important;
+  color: #0F766E !important;
+  border: 1px solid #CBD5E1 !important;
+}
+
+.challenge-action-bar {
+  background-color: rgba(10, 14, 26, 0.4);
+  border-top-color: rgba(79, 209, 217, 0.2);
+}
+
+html.light-theme .challenge-action-bar {
+  background-color: #EFEFE9 !important;
+  border-top-color: #D1D0C7 !important;
+}
+
+html.light-theme .challenge-action-bar .btn-secondary {
+  background-color: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+html.light-theme .challenge-action-bar .btn-secondary:hover {
+  background-color: #F8FAFC !important;
+  border-color: #94A3B8 !important;
+}
+
+/* Light theme general adaptations */
+html.light-theme header {
+  background-color: rgba(247, 246, 241, 0.95) !important;
+  border-bottom-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+html.light-theme header span.text-white,
+html.light-theme header div.text-white {
+  color: #1B1E24 !important;
+}
+
+html.light-theme header nav {
+  background-color: transparent !important;
+  border-color: transparent !important;
+}
+
+html.light-theme header nav button.text-slate-400 {
+  color: #4A5568 !important;
+}
+
+html.light-theme header nav button.text-slate-400:hover {
+  color: #1B1E24 !important;
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+html.light-theme .theme-toggle-btn {
+  background-color: #FFFFFF !important;
+  border: 1.5px solid #CBD5E1 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  color: #1B1E24 !important;
+}
+
+html.light-theme .theme-toggle-btn:hover {
+  background-color: #F1F5F9 !important;
+  border-color: #94A3B8 !important;
+}
+
+html.light-theme .btn-secondary {
+  color: #20878E !important;
+  border-color: rgba(32, 135, 142, 0.4) !important;
+  background-color: rgba(32, 135, 142, 0.06) !important;
+}
+
+html.light-theme .btn-secondary:hover {
+  background-color: rgba(32, 135, 142, 0.12) !important;
+  border-color: #20878E !important;
+}
+
+html.light-theme .btn-icon {
+  background-color: #FFFFFF !important;
+  color: #1B1E24 !important;
+  border-color: #CBD5E1 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+html.light-theme .btn-icon:hover {
+  background-color: #F8FAFC !important;
+  border-color: #94A3B8 !important;
+  color: #20878E !important;
+}
+
+html.light-theme .gate-chip {
+  background-color: #FFFFFF !important;
+  color: #20878E !important;
+  border-color: #94A3B8 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+html.light-theme .gate-chip:hover {
+  border-color: #20878E !important;
+  box-shadow: 0 2px 8px rgba(32, 135, 142, 0.2) !important;
+}
+
+html.light-theme .gate-placed {
+  background-color: #FFFFFF !important;
+  color: #20878E !important;
+  border-color: #20878E !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+html.light-theme h1.text-white,
+html.light-theme h2.text-white,
+html.light-theme h3.text-white,
+html.light-theme h4.text-white {
+  color: #1B1E24 !important;
+}
+
+html.light-theme .text-slate-300,
+html.light-theme .text-slate-400 {
+  color: #4A5568 !important;
+}
+
+html.light-theme footer {
+  background-color: #EDECE7 !important;
+  border-top-color: rgba(0, 0, 0, 0.08) !important;
+  color: #4A5568 !important;
+}
+
+html.light-theme footer span.text-white,
+html.light-theme footer h4.text-slate-200 {
+  color: #1B1E24 !important;
+}
+
+html.light-theme aside {
+  background-color: #EFEFE9 !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  color: #1B1E24 !important;
+}
+
+html.light-theme aside span.text-slate-400,
+html.light-theme aside span.text-slate-500 {
+  color: #4A5568 !important;
+}
+
+html.light-theme aside div.bg-\[\#0A0E1A\]\/40,
+html.light-theme aside div.bg-\[\#0A0E1A\]\/60,
+html.light-theme aside div.bg-\[\#0A0E1A\] {
+  background-color: #FFFFFF !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+html.light-theme aside textarea {
+  background-color: #FFFFFF !important;
+  color: #1B1E24 !important;
+  border-color: #D1D0C7 !important;
+}
+
+html.light-theme .circuit-canvas {
+  background: #F7F6F1 !important;
+  background-image: radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.08) 1px, transparent 0) !important;
+}
+
+/* Buttons */
+.btn-primary {
+  background: var(--cryostat-gold);
+  color: var(--void);
+  font-weight: 700;
+  padding: 0.65rem 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(217, 164, 65, 0.4);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 14px rgba(217, 164, 65, 0.25);
+}
+
+.btn-primary:hover {
+  background: #c49235;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(217, 164, 65, 0.35);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--signal-cyan);
+  font-weight: 600;
+  padding: 0.65rem 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(79, 209, 217, 0.3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-secondary:hover {
+  background: rgba(79, 209, 217, 0.08);
+  border-color: var(--signal-cyan);
+  transform: translateY(-1px);
+}
+
+.btn-icon {
+  background: rgba(79, 209, 217, 0.05);
+  color: var(--signal-cyan);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(79, 209, 217, 0.15);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon:hover {
+  background: rgba(79, 209, 217, 0.15);
+  color: #ffffff;
+}
+
+/* Circuit Canvas Grid */
+.circuit-canvas {
+  background: var(--void);
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(79, 209, 217, 0.08) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* Gate Chip — Signal-Cyan Default, Cryostat-Gold on Active */
+.gate-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 40px;
+  border-radius: 9px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: grab;
+  transition: all 0.18s ease;
+  user-select: none;
+  position: relative;
+  background: rgba(79, 209, 217, 0.08);
+  color: var(--signal-cyan);
+  border: 1.5px solid rgba(79, 209, 217, 0.4);
+}
+
+.gate-chip:hover {
+  transform: translateY(-1.5px);
+  border-color: var(--signal-cyan);
+  box-shadow: 0 4px 12px rgba(79, 209, 217, 0.2);
+  z-index: 10;
+}
+
+.gate-chip.selected,
+.gate-chip.active {
+  background: rgba(217, 164, 65, 0.18);
+  color: var(--cryostat-gold);
+  border-color: var(--cryostat-gold);
+  box-shadow: 0 0 16px rgba(217, 164, 65, 0.35);
+}
+
+.gate-placed {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: absolute;
+  background: var(--panel);
+  color: var(--signal-cyan);
+  border: 1.5px solid var(--signal-cyan);
+}
+
+.gate-placed:hover {
+  transform: scale(1.1);
+  border-color: var(--cryostat-gold);
+  color: var(--cryostat-gold);
+  z-index: 20;
+}
+
+.qubit-wire {
+  stroke: rgba(79, 209, 217, 0.25);
+  stroke-width: 2;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.35s ease forwards;
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+.confetti-piece {
+  position: fixed;
+  top: 0;
+  animation: confetti-fall 3s ease-in forwards;
+  z-index: 9999;
+}
