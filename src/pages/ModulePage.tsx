@@ -84,6 +84,35 @@ export function ModulePage() {
   });
 
 
+  // Reading Comfort Settings (persisted to localStorage)
+  const [readingFont, setReadingFont] = useState<'serif' | 'sans'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('qubiq-reading-font') as 'serif' | 'sans') || 'serif';
+    }
+    return 'serif';
+  });
+
+  const [readingSize, setReadingSize] = useState<'sm' | 'base' | 'lg'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('qubiq-reading-size') as 'sm' | 'base' | 'lg') || 'base';
+    }
+    return 'base';
+  });
+
+  const handleSetReadingFont = (font: 'serif' | 'sans') => {
+    setReadingFont(font);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('qubiq-reading-font', font);
+    }
+  };
+
+  const handleSetReadingSize = (size: 'sm' | 'base' | 'lg') => {
+    setReadingSize(size);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('qubiq-reading-size', size);
+    }
+  };
+
   // Auto-populate circuit sandbox when module changes & execute initial simulation
   useEffect(() => {
     const secWithCircuit = currentModule.sections.find((s) => s.preloadedCircuit);
@@ -559,18 +588,94 @@ Please calibrate to my current learning level: **${userLevel}** (${completedCoun
         >
           <div className="w-full px-6 sm:px-12 py-10 space-y-10 text-left max-w-4xl">
             {/* 1. Module Title & Meta */}
-            <div className="border-b border-white/10 pb-6">
-              <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-slate-400 mb-2">
-                <span>Track: {currentTrack.title}</span>
-                <span>•</span>
-                <span>{currentModule.difficulty}</span>
-                <span>•</span>
-                <span>{currentModule.estimatedMinutes} min read</span>
+            <div className="border-b border-white/10 light:border-slate-200 pb-6">
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-slate-400 light:text-slate-600">
+                  <span>Track: {currentTrack.title}</span>
+                  <span>•</span>
+                  <span>{currentModule.difficulty}</span>
+                  <span>•</span>
+                  <span>{currentModule.estimatedMinutes} min read</span>
+                </div>
+
+                {/* Reader Comfort Controls (Serif/Sans toggle + Font Size scaler) */}
+                <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#0c101d] light:bg-slate-100 border border-white/10 light:border-slate-300 shadow-xs">
+                  {/* Typeface Toggle */}
+                  <div className="flex items-center p-0.5 rounded-lg bg-white/[0.04] light:bg-white border border-white/5 light:border-slate-200">
+                    <button
+                      type="button"
+                      onClick={() => handleSetReadingFont('serif')}
+                      className={`px-2.5 py-0.5 rounded text-[11px] font-editorial-serif transition-all cursor-pointer ${
+                        readingFont === 'serif'
+                          ? 'bg-[#4FD1D9] text-[#0A0E1A] font-bold shadow-xs'
+                          : 'text-slate-400 light:text-slate-600 hover:text-white light:hover:text-black'
+                      }`}
+                      title="Editorial Serif (Newsreader) — recommended for textbooks & long-form reading"
+                    >
+                      Serif
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSetReadingFont('sans')}
+                      className={`px-2.5 py-0.5 rounded text-[11px] font-sans transition-all cursor-pointer ${
+                        readingFont === 'sans'
+                          ? 'bg-[#4FD1D9] text-[#0A0E1A] font-bold shadow-xs'
+                          : 'text-slate-400 light:text-slate-600 hover:text-white light:hover:text-black'
+                      }`}
+                      title="Modern Sans (Inter)"
+                    >
+                      Sans
+                    </button>
+                  </div>
+
+                  <div className="w-px h-3.5 bg-white/10 light:bg-slate-300" />
+
+                  {/* Size Scaler */}
+                  <div className="flex items-center gap-0.5 font-mono text-[11px]">
+                    <button
+                      type="button"
+                      onClick={() => handleSetReadingSize('sm')}
+                      className={`px-2 py-0.5 rounded transition-all cursor-pointer ${
+                        readingSize === 'sm'
+                          ? 'bg-white/10 light:bg-slate-200 text-[#4FD1D9] light:text-[#0D9488] font-bold'
+                          : 'text-slate-400 hover:text-white light:hover:text-black'
+                      }`}
+                      title="Compact text (15px)"
+                    >
+                      A-
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSetReadingSize('base')}
+                      className={`px-2 py-0.5 rounded transition-all cursor-pointer ${
+                        readingSize === 'base'
+                          ? 'bg-white/10 light:bg-slate-200 text-[#4FD1D9] light:text-[#0D9488] font-bold'
+                          : 'text-slate-400 hover:text-white light:hover:text-black'
+                      }`}
+                      title="Standard text (16.5px)"
+                    >
+                      A
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSetReadingSize('lg')}
+                      className={`px-2 py-0.5 rounded transition-all cursor-pointer ${
+                        readingSize === 'lg'
+                          ? 'bg-white/10 light:bg-slate-200 text-[#4FD1D9] light:text-[#0D9488] font-bold'
+                          : 'text-slate-400 hover:text-white light:hover:text-black'
+                      }`}
+                      title="Large comfortable text (18.5px)"
+                    >
+                      A+
+                    </button>
+                  </div>
+                </div>
               </div>
+
               <h1 className="text-3xl font-extrabold tracking-tight leading-tight font-heading text-inherit">
                 {currentModule.title}
               </h1>
-              <p className="mt-3 text-base opacity-80 leading-relaxed font-sans">
+              <p className="mt-3 text-base opacity-80 leading-relaxed font-sans max-w-3xl">
                 {currentModule.description}
               </p>
             </div>
@@ -588,12 +693,17 @@ Please calibrate to my current learning level: **${userLevel}** (${completedCoun
                     {section.title}
                   </h2>
                   <div
-                    className="prose prose-invert light:prose-slate max-w-none leading-relaxed text-sm sm:text-base opacity-90
-                      [&_p]:mb-4 [&_p]:leading-relaxed
-                      [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4 [&_ul]:space-y-1.5
-                      [&_strong]:font-semibold [&_strong]:text-inherit
-                      [&_code]:text-[#4FD1D9] light:[&_code]:text-[#1B1E24] [&_code]:bg-[#12172A] light:[&_code]:bg-slate-200 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_code]:font-mono [&_code]:border [&_code]:border-white/10 light:[&_code]:border-slate-300
-                    "
+                    className={`curriculum-prose max-w-none transition-all duration-150 ${
+                      readingFont === 'serif'
+                        ? 'font-editorial-serif text-[#CBD5E1] light:text-[#2D3748]'
+                        : 'font-editorial-sans text-slate-200 light:text-slate-800'
+                    } ${
+                      readingSize === 'sm'
+                        ? 'text-[15px]'
+                        : readingSize === 'lg'
+                        ? 'text-[18.5px]'
+                        : 'text-[16.5px]'
+                    }`}
                     dangerouslySetInnerHTML={{ __html: formatModuleContent(section.content) }}
                   />
 
@@ -865,20 +975,38 @@ Please calibrate to my current learning level: **${userLevel}** (${completedCoun
   );
 }
 
-// Markdown parser helper for content with rich callout cards
+// Markdown parser helper for content with rich callout cards & Dirac ket typesetting
 function formatSubMarkdown(text: string): string {
-  return text
-    .replace(/^### (.*$)/gm, '<h3 class="text-base font-bold mt-4 mb-2 text-inherit font-heading">$1</h3>')
-    .replace(/^## (.*$)/gm, '<h2 class="text-lg font-bold mt-6 mb-3 text-inherit font-heading">$1</h2>')
-    .replace(/^# (.*$)/gm, '<h1 class="text-xl font-bold mb-4 text-inherit font-heading">$1</h1>')
-    .replace(/\*\*(.*?)\*\*/g, '<strong class="text-inherit font-semibold">$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/`([^`]+)`/g, '<code class="text-[#4FD1D9] light:text-[#1B1E24] bg-[#0A0E1A] light:bg-slate-200 px-1.5 py-0.5 rounded font-mono text-xs border border-white/10 light:border-slate-300">$1</code>')
-    .replace(/\n\n/g, '</p><p class="mb-3 leading-relaxed">')
-    .replace(/^- (.*$)/gm, '<li class="opacity-90 leading-relaxed mb-1">$1</li>')
-    .replace(/(<li>[\s\S]*?<\/li>)/g, '<ul class="list-disc pl-5 my-2 space-y-1">$1</ul>')
-    .replace(/<\/ul>\s*<ul class="list-disc pl-5 my-2 space-y-1">/g, '')
+  // 1. Protect inline code tokens
+  const codeBlocks: string[] = [];
+  let masked = text.replace(/`([^`]+)`/g, (_m, code) => {
+    codeBlocks.push(code);
+    return `__CODE_TOKEN_${codeBlocks.length - 1}__`;
+  });
+
+  // 2. Typeset Dirac notation kets |...⟩ (e.g., |0⟩, |1⟩, |+⟩, |-⟩, |ψ⟩, |00⟩, |11⟩, |Φ⁺⟩, |Ψ⁻⟩)
+  masked = masked.replace(/(\|[\w\d\+\-\*\/\.\,\'\^αβγδθφψΦΨΩ\s]+\⟩)/g, '<span class="quantum-ket">$1</span>');
+
+  // 3. Typeset headings, bold, italics, lists, and line breaks
+  let html = masked
+    .replace(/^### (.*$)/gm, '<h3 class="text-base font-bold mt-5 mb-2 text-inherit font-heading tracking-tight">$1</h3>')
+    .replace(/^## (.*$)/gm, '<h2 class="text-xl font-bold mt-7 mb-3 text-inherit font-heading tracking-tight border-b border-white/10 light:border-slate-200/80 pb-1.5">$1</h2>')
+    .replace(/^# (.*$)/gm, '<h1 class="text-2xl font-bold mb-4 text-inherit font-heading tracking-tight">$1</h1>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-slate-100 light:text-slate-900">$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em class="italic opacity-90">$1</em>')
+    .replace(/\n\n/g, '</p><p class="mb-4">')
+    .replace(/^- (.*$)/gm, '<li class="mb-2 pl-1 leading-relaxed opacity-90">$1</li>')
+    .replace(/(<li>[\s\S]*?<\/li>)/g, '<ul class="list-disc pl-6 my-3 space-y-1.5 opacity-90">$1</ul>')
+    .replace(/<\/ul>\s*<ul class="list-disc pl-6 my-3 space-y-1.5 opacity-90">/g, '')
+    .replace(/^\d+\.\s+(.*$)/gm, '<li class="mb-2 pl-1 leading-relaxed opacity-90">$1</li>')
     .replace(/\n/g, '<br/>');
+
+  // 4. Restore protected inline code
+  html = html.replace(/__CODE_TOKEN_(\d+)__/g, (_m, idx) => {
+    return `<code class="text-[#4FD1D9] light:text-[#0f766e] bg-[#0A0E1A] light:bg-slate-200/70 px-1.5 py-0.5 rounded font-mono text-[0.88em] border border-white/10 light:border-slate-300 font-medium">${codeBlocks[Number(idx)]}</code>`;
+  });
+
+  return html;
 }
 
 function formatModuleContent(markdown: string): string {

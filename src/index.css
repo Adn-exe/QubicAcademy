@@ -85,6 +85,7 @@ html.light-theme {
   --font-heading: 'Space Grotesk', 'Outfit', -apple-system, sans-serif;
   --font-display: 'Outfit', -apple-system, sans-serif;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Newsreader', Charter, Georgia, serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
@@ -748,4 +749,80 @@ html.light-theme .circuit-canvas {
   top: 0;
   animation: confetti-fall 3s ease-in forwards;
   z-index: 9999;
+}
+
+/* ============================================================
+   Editorial Quantum Reading Typography & Dirac Ket Treatments
+   ============================================================ */
+.font-editorial-serif {
+  font-family: 'Newsreader', Charter, Georgia, 'Times New Roman', serif;
+}
+
+.font-editorial-sans {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Dirac Quantum Ket Badge */
+.quantum-ket {
+  display: inline-flex;
+  align-items: center;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.88em;
+  font-weight: 600;
+  line-height: 1.25;
+  padding: 0.12rem 0.4rem;
+  margin: 0 0.15rem;
+  border-radius: 0.375rem;
+  background-color: rgba(79, 209, 217, 0.1);
+  color: #4FD1D9;
+  border: 1px solid rgba(79, 209, 217, 0.25);
+  vertical-align: baseline;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  transition: all 0.15s ease;
+}
+
+.quantum-ket:hover {
+  border-color: rgba(79, 209, 217, 0.5);
+  background-color: rgba(79, 209, 217, 0.18);
+  box-shadow: 0 0 8px rgba(79, 209, 217, 0.25);
+}
+
+html.light-theme .quantum-ket {
+  background-color: rgba(13, 148, 136, 0.08);
+  color: #0f766e;
+  border-color: rgba(13, 148, 136, 0.28);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+html.light-theme .quantum-ket:hover {
+  background-color: rgba(13, 148, 136, 0.14);
+  border-color: rgba(13, 148, 136, 0.5);
+}
+
+/* Curriculum Reading Typography Container */
+.curriculum-prose {
+  max-width: 72ch;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern", "liga", "clig", "calt";
+}
+
+.curriculum-prose p {
+  line-height: 1.8;
+  margin-bottom: 1.25rem;
+}
+
+.curriculum-prose.font-editorial-serif p {
+  line-height: 1.85;
+  letter-spacing: 0.005em;
+}
+
+.curriculum-prose strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.curriculum-prose em {
+  font-style: italic;
 }
