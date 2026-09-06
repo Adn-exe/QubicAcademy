@@ -414,6 +414,39 @@ function MessageBubble({
   );
 }
 
+// --- Clean LaTeX Math expressions into Unicode ---
+function cleanLatexMath(str: string): string {
+  return str
+    .replace(/\\alpha/g, 'α')
+    .replace(/\\beta/g, 'β')
+    .replace(/\\gamma/g, 'γ')
+    .replace(/\\delta/g, 'δ')
+    .replace(/\\theta/g, 'θ')
+    .replace(/\\phi/g, 'ϕ')
+    .replace(/\\psi/g, 'ψ')
+    .replace(/\\Phi/g, 'Φ')
+    .replace(/\\Psi/g, 'Ψ')
+    .replace(/\\rangle/g, '⟩')
+    .replace(/\\langle/g, '⟨')
+    .replace(/\\sqrt\{2\}/g, '√2')
+    .replace(/\\sqrt\{([^}]+)\}/g, '√$1')
+    .replace(/\\frac\{1\}\{\\sqrt\{2\}\}/g, '1/√2')
+    .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '($1/$2)')
+    .replace(/\\otimes/g, '⊗')
+    .replace(/\\pm/g, '±')
+    .replace(/\\approx/g, '≈')
+    .replace(/\\neq/g, '≠')
+    .replace(/\\leq/g, '≤')
+    .replace(/\\geq/g, '≥')
+    .replace(/\\circ/g, '°')
+    .replace(/\\times/g, '×')
+    .replace(/\\cdot/g, '·')
+    .replace(/\^\{\\dagger\}/g, '†')
+    .replace(/\^\{([^}]+)\}/g, '^$1')
+    .replace(/\$([^\$]+)\$/g, '$1') // remove $...$ wrappers
+    .replace(/\$\$/g, '');
+}
+
 // --- Structured Markdown Formatter for Crisp & Uncluttered Layout ---
 
 function formatMarkdown(raw: string): string {
@@ -437,6 +470,24 @@ function formatMarkdown(raw: string): string {
     return placeholder;
   });
 
+  // 1b. Clean LaTeX math into clean Unicode before HTML escaping
+  text = cleanLatexMath(text);
+
+  // 1c. Repair any truncated/unclosed markdown link at the end of text (e.g. "[Module 5: Grover's Search](/learn/grovers")
+  text = text.replace(/\[([^\]]+)\]\(([^)\n]*)$/, (_, label, partialUrl) => {
+    let cleanUrl = partialUrl.trim();
+    if (!cleanUrl.endsWith('/')) {
+      // try to complete module path if cut off e.g. /learn/grovers -> /learn/grovers-search
+      if (cleanUrl.includes('/learn/grover')) cleanUrl = '/learn/grovers-search';
+      else if (cleanUrl.includes('/learn/deutsch')) cleanUrl = '/learn/deutsch-jozsa';
+      else if (cleanUrl.includes('/learn/superposition')) cleanUrl = '/learn/superposition-single-qubit';
+      else if (cleanUrl.includes('/learn/quantum-measure')) cleanUrl = '/learn/quantum-measurement';
+      else if (cleanUrl.includes('/learn/entangle')) cleanUrl = '/learn/entanglement-bell-states';
+      else if (cleanUrl.includes('/learn/quantum-tele')) cleanUrl = '/learn/quantum-teleportation';
+    }
+    return `[${label}](${cleanUrl})`;
+  });
+
   // 2. Escape basic HTML in main text
   text = text
     .replace(/&/g, '&amp;')
@@ -457,18 +508,28 @@ function formatMarkdown(raw: string): string {
 
   // 5b. Direct Platform Section Buttons & Links: [text](url)
   text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, linkText, url) => {
-    const isInternal = url.startsWith('/');
-    return `<a href="${url}" data-link="${url}" class="tutor-nav-btn inline-flex items-center gap-1.5 my-1 px-3 py-1 rounded-lg bg-[#4FD1D9]/15 hover:bg-[#4FD1D9]/25 text-[#4FD1D9] light:text-[#0E7077] font-semibold text-xs transition-all border border-[#4FD1D9]/30 no-underline cursor-pointer shadow-xs" ${!isInternal ? 'target="_blank" rel="noopener noreferrer"' : ''}><span>${linkText}</span><span class="text-[10px] opacity-75">→</span></a>`;
+    // Normalize localhost / domain URLs to pure relative paths
+    let cleanUrl = url.trim().replace(/^https?:\/\/[^/]+/i, '');
+    if (!cleanUrl.startsWith('/') && (cleanUrl.startsWith('learn/') || cleanUrl.startsWith('lab') || cleanUrl.startsWith('problems'))) {
+      cleanUrl = '/' + cleanUrl;
+    }
+    // Clean trailing arrows or whitespace inside link label
+    const cleanLabel = linkText.replace(/[→\->\s]+$/g, '').trim();
+    const isInternal = cleanUrl.startsWith('/');
+    return `<a href="${cleanUrl}" data-link="${cleanUrl}" class="tutor-nav-btn inline-flex items-center gap-1.5 my-1 px-3 py-1 rounded-lg bg-[#4FD1D9]/15 hover:bg-[#4FD1D9]/25 text-[#4FD1D9] light:text-[#0E7077] font-semibold text-xs transition-all border border-[#4FD1D9]/30 no-underline cursor-pointer shadow-xs" ${!isInternal ? 'target="_blank" rel="noopener noreferrer"' : ''}><span>${cleanLabel}</span><span class="text-[10px] opacity-75">→</span></a>`;
   });
 
   // 6. Lists
+  // Clean messy bullet lists with numbers e.g. "•1." or "* 1."
+  text = text.replace(/^[•*]\s*(\d+\.)/gm, '$1');
+
   // Transform unordered lists
-  text = text.replace(/(?:^[*-] (?:.*)\n?)+/gm, (match) => {
+  text = text.replace(/(?:^[*-•] (?:.*)\n?)+/gm, (match) => {
     const items = match
       .trim()
       .split('\n')
       .map((line) => {
-        const content = line.replace(/^[*-] /, '').trim();
+        const content = line.replace(/^[*-•]\s*/, '').trim();
         return `<li class="flex items-start gap-2 text-xs leading-relaxed"><span class="text-[var(--signal-cyan)] leading-none mt-1 shrink-0">•</span><span>${content}</span></li>`;
       })
       .join('');
@@ -476,12 +537,12 @@ function formatMarkdown(raw: string): string {
   });
 
   // Transform ordered lists
-  text = text.replace(/(?:^\d+\. (?:.*)\n?)+/gm, (match) => {
+  text = text.replace(/(?:^\d+\.\s*(?:.*)\n?)+/gm, (match) => {
     const items = match
       .trim()
       .split('\n')
       .map((line, idx) => {
-        const content = line.replace(/^\d+\. /, '').trim();
+        const content = line.replace(/^\d+\.\s*/, '').trim();
         return `<li class="flex items-start gap-2 text-xs leading-relaxed"><span class="font-mono text-[10px] text-[var(--cryostat-gold)] mt-0.5 shrink-0 font-bold">${idx + 1}.</span><span>${content}</span></li>`;
       })
       .join('');

@@ -51,15 +51,21 @@ Core Capabilities (when within domain):
    - STRICT PROHIBITION: Never provide direct answers, hints, or solutions for specific problem challenges. You are strictly forbidden from assisting inside the evaluated problems section.
 
 Guidelines for Clean & Uncluttered Responses (CRITICAL):
+- **NO RAW LATEX SLASHES OR DOLLAR SIGNS**: NEVER use raw LaTeX codes like $\\alpha$, $\\beta$, \\rangle, \\langle, or \\frac. ALWAYS use clean Unicode text:
+  - States: |0⟩, |1⟩, |+⟩, |−⟩, |ψ⟩, |Φ+⟩
+  - Combinations: α|0⟩ + β|1⟩
+  - Normalization: 1/√2, (1/√2)(|0⟩ + |1⟩)
+  - Math symbols: ⊗, ±, ≈, ≠, †
+- **Clean Markdown Links**: NEVER prepend domain names like http://localhost... or https://... to links. Use only clean relative paths (e.g. [Open Quantum Lab](/lab)). Never put arrow symbols (→) inside link brackets.
+- **Completeness**: Always finish your entire sentence, thought, and markdown structure before stopping. Never leave unclosed brackets, unclosed tags, or cut-off sentences.
 - **Direct & Crisp**: Start directly with the pedagogical answer. Avoid repetitive greetings or preamble.
 - **Bite-Sized Structure**: Use short paragraphs (2-3 sentences max). Never dump overwhelming walls of text.
-- **Structured Highlights**: Use bullet points with bold keywords (**Concept**: Explanation) for multiple points or steps.
-- **Mathematical Clarity**: Use standard Dirac notation: |0⟩, |1⟩, |+⟩, |−⟩, α|0⟩ + β|1⟩, |Φ+⟩.
-- **Clean Code**: Put Qiskit/Python code in clean fenced blocks (\\\`\\\`\\\`python).
+- **Structured Highlights**: Use bullet points with bold keywords (**Concept**: Explanation).
+- **Clean Code**: Put Qiskit/Python code in clean fenced blocks (\`\`\`python).
 - **Circuit Synthesis**: If asked to create or build a circuit, provide the circuit JSON in a dedicated block:
-\\\`\\\`\\\`circuit-json
+\`\`\`circuit-json
 {"name":"...","numQubits":N,"steps":[{"gates":[{"id":"g1","type":"H","qubit":0}]},...]}
-\\\`\\\`\\\``;
+\`\`\``;
 
 const SUSPICIOUS_OR_OFFTOPIC_PATTERNS = [
   /ignore (all )?(previous|above) (instructions|prompts)/i,
