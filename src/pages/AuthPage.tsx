@@ -35,13 +35,16 @@ export const AuthPage: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // If already logged in, redirect to destination or /profile
+  // If already logged in, redirect to destination or / (homepage)
   React.useEffect(() => {
-    if (user) {
-      const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || '/profile';
-      navigate(from, { replace: true });
+    if (user && !loading && !successMsg) {
+      const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || '/';
+      navigate(from, {
+        replace: true,
+        state: { toastMessage: 'Successfully signed in! Welcome back.' },
+      });
     }
-  }, [user, navigate, location]);
+  }, [user, navigate, location, loading, successMsg]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,9 +72,12 @@ export const AuthPage: React.FC = () => {
           setErrorMsg(error.message);
         } else {
           setSuccessMsg('Signed in successfully! Redirecting...');
+          const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || '/';
           setTimeout(() => {
-            const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || '/profile';
-            navigate(from, { replace: true });
+            navigate(from, {
+              replace: true,
+              state: { toastMessage: 'Successfully signed in! Welcome back to Qubiq Academy.' },
+            });
           }, 300);
         }
       } else {
@@ -85,9 +91,12 @@ export const AuthPage: React.FC = () => {
           }
         } else {
           setSuccessMsg('Account created successfully! Redirecting...');
+          const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || '/';
           setTimeout(() => {
-            const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || '/profile';
-            navigate(from, { replace: true });
+            navigate(from, {
+              replace: true,
+              state: { toastMessage: 'Account created successfully! Welcome to Qubiq Academy.' },
+            });
           }, 300);
         }
       }

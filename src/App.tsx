@@ -24,6 +24,8 @@ import { syncReadAnnouncementsFromSupabase } from './data/announcementsData';
 import { supabase } from './lib/supabase';
 import { purgeLegacyMockData } from './lib/db';
 
+import { GlobalToast } from './components/UI/GlobalToast';
+
 function ScrollToTop() {
   const { pathname } = useLocation();
 
@@ -91,6 +93,7 @@ function AppContent() {
           </Routes>
         </main>
         <TutorPanel />
+        <GlobalToast />
       </div>
     </BrowserRouter>
   );
