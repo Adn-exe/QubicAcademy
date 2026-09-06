@@ -10,7 +10,7 @@
 // Grounded in tokens: --signal-cyan (#4FD1D9), --cryostat-gold (#D9A441), --panel (#12172A)
 // ============================================================
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Text, Line } from '@react-three/drei';
 import * as THREE from 'three';
@@ -147,10 +147,12 @@ export function LessonVisualizer({ moduleId, onOpenInBuilder }: LessonVisualizer
               gl={{ antialias: true, alpha: true }}
               className="cursor-grab active:cursor-grabbing"
             >
-              <ambientLight intensity={0.6} />
-              <pointLight position={[6, 6, 6]} intensity={0.8} />
-              <BlochSphereMesh vector={blochVec} />
-              <OrbitControls enableZoom={false} enablePan={false} rotateSpeed={0.5} />
+              <Suspense fallback={null}>
+                <ambientLight intensity={0.8} />
+                <pointLight position={[6, 6, 6]} intensity={1.0} />
+                <BlochSphereMesh vector={blochVec} />
+                <OrbitControls enableZoom={false} enablePan={false} rotateSpeed={0.5} />
+              </Suspense>
             </Canvas>
 
             {/* State vector coordinate badge */}

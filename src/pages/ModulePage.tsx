@@ -256,11 +256,11 @@ export function ModulePage() {
             bg-[#12172A] light:bg-[#EFEFE9] border-r border-white/10 light:border-black/10 flex flex-col shrink-0
             transition-all duration-300 ease-in-out overflow-hidden
             ${mobileDrawerOpen ? 'translate-x-0 w-80' : '-translate-x-full md:translate-x-0'}
-            ${isNavigatorCollapsed ? 'md:w-0 md:opacity-0 md:pointer-events-none md:border-r-0' : 'md:w-80 md:opacity-100'}
+            ${isNavigatorCollapsed ? 'hidden md:hidden' : 'md:flex md:w-80'}
           `}
         >
           {/* Header with Title & Tab Switcher */}
-          <div className="p-3.5 border-b border-white/10 light:border-black/10 space-y-3 min-w-[320px]">
+          <div className="p-3.5 border-b border-white/10 light:border-black/10 space-y-3 w-80">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-mono font-bold tracking-wider uppercase text-slate-300 light:text-slate-700">
@@ -452,6 +452,19 @@ export function ModulePage() {
           ref={contentRef}
           className="flex-1 overflow-y-auto paper-surface relative flex flex-col items-center"
         >
+          {/* Floating edge tab when navigator is collapsed */}
+          {isNavigatorCollapsed && (
+            <button
+              type="button"
+              onClick={() => setIsNavigatorCollapsed(false)}
+              className="hidden md:flex fixed left-0 top-1/2 -translate-y-1/2 z-40 items-center gap-1.5 px-2.5 py-3 rounded-r-xl bg-[#12172A] light:bg-white border border-l-0 border-white/20 light:border-slate-300 text-xs font-mono text-[#4FD1D9] light:text-[#20878E] hover:text-white light:hover:text-black shadow-2xl cursor-pointer transition-all hover:pl-3"
+              title="Expand Study Navigator"
+            >
+              <PanelLeftOpen size={16} />
+              <span className="text-[11px] font-semibold">Navigator</span>
+            </button>
+          )}
+
           <div className={`w-full px-6 sm:px-12 py-10 space-y-10 text-left transition-all duration-300 ${isNavigatorCollapsed ? 'max-w-5xl' : 'max-w-4xl'}`}>
             {/* 1. Module Title & Meta */}
             <div className="border-b border-white/10 pb-6">
