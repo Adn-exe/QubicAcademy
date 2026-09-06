@@ -90,8 +90,75 @@ export function CircuitCanvas() {
     e.dataTransfer.dropEffect = 'copy';
   };
 
+  const loadCircuit = useCircuitStore((s) => s.loadCircuit);
+  const numGates = circuit.steps.reduce((acc, step) => acc + step.gates.length, 0);
+
+  const handleLoadPreset = (presetType: 'bell' | 'superposition' | 'ghz') => {
+    if (presetType === 'bell') {
+      loadCircuit({
+        name: 'Bell State',
+        numQubits: 2,
+        steps: [
+          { gates: [{ id: 'g1', type: 'H', qubit: 0 }] },
+          { gates: [{ id: 'g2', type: 'CNOT', qubit: 0, control: 0, target: 1 }] },
+        ],
+      });
+    } else if (presetType === 'superposition') {
+      loadCircuit({
+        name: 'Superposition',
+        numQubits: 1,
+        steps: [{ gates: [{ id: 'g1', type: 'H', qubit: 0 }] }],
+      });
+    } else if (presetType === 'ghz') {
+      loadCircuit({
+        name: 'GHZ State',
+        numQubits: 3,
+        steps: [
+          { gates: [{ id: 'g1', type: 'H', qubit: 0 }] },
+          { gates: [{ id: 'g2', type: 'CNOT', qubit: 0, control: 0, target: 1 }] },
+          { gates: [{ id: 'g3', type: 'CNOT', qubit: 1, control: 1, target: 2 }] },
+        ],
+      });
+    }
+  };
+
   return (
-    <div className="flex-1 overflow-auto circuit-canvas rounded-xl border border-quantum-700/20">
+    <div className="flex-1 overflow-auto circuit-canvas rounded-xl border border-quantum-700/20 relative">
+      {numGates === 0 && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 pointer-events-none">
+          <div className="bg-[#12172A]/90 backdrop-blur-md border border-[var(--signal-cyan)]/30 rounded-2xl p-5 max-w-sm text-center space-y-3 shadow-2xl pointer-events-auto animate-fade-in">
+            <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-[var(--signal-cyan)]">
+              Empty Quantum Wire Grid
+            </h4>
+            <p className="text-xs text-slate-300">
+              Drag gates from the palette above, or launch a quick-start circuit preset:
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => handleLoadPreset('bell')}
+                className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-[var(--cryostat-gold)]/20 text-[var(--cryostat-gold)] border border-[var(--cryostat-gold)]/40 hover:bg-[var(--cryostat-gold)] hover:text-[#0A0E1A] transition-all cursor-pointer shadow-xs"
+              >
+                Bell State (|Φ⁺⟩)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleLoadPreset('superposition')}
+                className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-[var(--signal-cyan)]/20 text-[var(--signal-cyan)] border border-[var(--signal-cyan)]/40 hover:bg-[var(--signal-cyan)] hover:text-[#0A0E1A] transition-all cursor-pointer shadow-xs"
+              >
+                Superposition (|+⟩)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleLoadPreset('ghz')}
+                className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40 hover:bg-purple-500 hover:text-white transition-all cursor-pointer shadow-xs"
+              >
+                GHZ State (3Q)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <svg
         ref={svgRef}
         width={canvasWidth}

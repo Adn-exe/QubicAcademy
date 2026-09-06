@@ -35,10 +35,13 @@ import type {
 } from '../data/problems/problemsData';
 import { useCircuitStore } from '../core/store';
 
+import { ProblemsSkeleton } from '../components/UI/Skeletons';
+
 export function ProblemsPage() {
   const navigate = useNavigate();
   const loadCircuit = useCircuitStore((s) => s.loadCircuit);
 
+  const [loading, setLoading] = useState(true);
   const [problems, setProblems] = useState<QuantumProblem[]>(() => loadProblems());
   const [progress, setProgress] = useState<ProblemsProgress>(() => loadProblemsProgress());
   const [expandedProblemId, setExpandedProblemId] = useState<string | null>(null);
@@ -51,17 +54,25 @@ export function ProblemsPage() {
 
   // Reload problems on mount & sync with database
   useEffect(() => {
+    let mounted = true;
     const refreshData = () => {
-      setProblems(loadProblems());
-      setProgress(loadProblemsProgress());
+      if (mounted) {
+        setProblems(loadProblems());
+        setProgress(loadProblemsProgress());
+      }
     };
 
     refreshData();
-    syncProblemsFromSupabase().then(() => refreshData());
-    syncProblemsProgressFromSupabase().then(() => refreshData());
+    Promise.all([syncProblemsFromSupabase(), syncProblemsProgressFromSupabase()]).finally(() => {
+      if (mounted) {
+        refreshData();
+        setLoading(false);
+      }
+    });
 
     window.addEventListener('quantumlearn:problems_changed', refreshData);
     return () => {
+      mounted = false;
       window.removeEventListener('quantumlearn:problems_changed', refreshData);
     };
   }, []);
@@ -454,8 +465,12 @@ export function ProblemsPage() {
                 <div className="col-span-2 sm:col-span-2 text-right">Difficulty</div>
               </div>
 
-              {/* Rows */}
-              {filteredProblems.length > 0 ? (
+              {/* Skeleton loading or Rows or Empty state */}
+              {loading ? (
+                <div className="p-4">
+                  <ProblemsSkeleton />
+                </div>
+              ) : filteredProblems.length > 0 ? (
                 <div className="divide-y divide-white/[0.06] light:divide-black/[0.06]">
                   {filteredProblems.map((problem) => {
                     const isSolved = problem.status === 'Solved';
@@ -589,16 +604,20 @@ export function ProblemsPage() {
                   })}
                 </div>
               ) : (
-                /* Empty / No-Results State */
-                <div className="py-16 text-center space-y-3 px-4">
-                  <p className="text-sm text-slate-400">
-                    No problems match these filters.
+                <div className="p-12 text-center space-y-3">
+                  <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto text-slate-400">
+                    <Search size={22} />
+                  </div>
+                  <h3 className="text-sm font-bold text-[var(--ink)]">No Quantum Problems Match Your Filter</h3>
+                  <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                    Try adjusting your search query, topic, or difficulty filters to discover available challenges.
                   </p>
                   <button
                     onClick={handleClearFilters}
-                    className="inline-block text-xs font-mono text-[var(--cryostat-gold)] underline hover:opacity-80 cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs text-[var(--signal-cyan)] font-mono font-semibold transition-all cursor-pointer"
                   >
-                    Clear filters
+                    <X size={14} />
+                    <span>Reset All Filters</span>
                   </button>
                 </div>
               )}

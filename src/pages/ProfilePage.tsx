@@ -131,6 +131,8 @@ function CircuitThumbnail({ circuit }: { circuit: QuantumCircuit }) {
   );
 }
 
+import { ProfileSkeleton } from '../components/UI/Skeletons';
+
 export function ProfilePage() {
   const navigate = useNavigate();
   const data = useProfileStore((s) => s.data);
@@ -141,6 +143,7 @@ export function ProfilePage() {
   const loadCircuitInBuilder = useCircuitStore((s) => s.loadCircuit);
 
   // Edit Profile modal state & button ref
+  const [loading, setLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const editButtonRef = useRef<HTMLButtonElement | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -172,16 +175,26 @@ export function ProfilePage() {
   const [problemsProgress, setProblemsProgress] = useState<ProblemsProgress>(() => loadProblemsProgress());
 
   useEffect(() => {
+    let mounted = true;
     const refresh = () => {
-      setProblems(loadProblems());
-      setProblemsProgress(loadProblemsProgress());
+      if (mounted) {
+        setProblems(loadProblems());
+        setProblemsProgress(loadProblemsProgress());
+      }
     };
     refresh();
-    syncProblemsFromSupabase().then(() => refresh());
-    syncProblemsProgressFromSupabase().then(() => refresh());
+    Promise.all([syncProblemsFromSupabase(), syncProblemsProgressFromSupabase()]).finally(() => {
+      if (mounted) {
+        refresh();
+        setLoading(false);
+      }
+    });
 
     window.addEventListener('quantumlearn:problems_changed', refresh);
-    return () => window.removeEventListener('quantumlearn:problems_changed', refresh);
+    return () => {
+      mounted = false;
+      window.removeEventListener('quantumlearn:problems_changed', refresh);
+    };
   }, []);
 
   // Compute breakdown for ProblemsSolvedRing
@@ -254,10 +267,10 @@ export function ProfilePage() {
   return (
     <div className="min-h-screen bg-[var(--void)] text-[var(--ink)] py-10 px-4 sm:px-6 transition-colors duration-250">
       <div className="max-w-[960px] mx-auto space-y-8 animate-fade-in">
-        
-        {/* ============================================================
-            A. HEADER (Identity Strip)
-           ============================================================ */}
+        {loading ? (
+          <ProfileSkeleton />
+        ) : (
+          <>
         <section className="bg-[var(--panel)] rounded-2xl border border-white/10 light:border-black/10 p-6 sm:p-8 relative">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             
@@ -683,7 +696,8 @@ export function ProfilePage() {
             </div>
           )}
         </section>
-
+          </>
+        )}
       </div>
 
       {/* Confirmation Modal for Reset Progress */}

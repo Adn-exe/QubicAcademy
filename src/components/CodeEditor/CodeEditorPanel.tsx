@@ -7,7 +7,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Editor from '@monaco-editor/react';
 import { useCircuitStore } from '../../core/store';
 import { circuitToQiskit, qiskitToCircuit } from '../../core/qiskit-codegen';
-import { Play, AlertCircle } from 'lucide-react';
+import { Copy, Check, Play, AlertCircle } from 'lucide-react';
+import { triggerToast } from '../UI/GlobalToast';
 
 export function CodeEditorPanel() {
   const circuit = useCircuitStore((s) => s.circuit);
@@ -16,7 +17,15 @@ export function CodeEditorPanel() {
   const isSimulating = useCircuitStore((s) => s.isSimulating);
 
   const [code, setCode] = useState('');
+  const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    triggerToast('Qiskit Python code copied to clipboard!', 'success');
+    setTimeout(() => setCopied(false), 2000);
+  };
   const [syncDirection, setSyncDirection] = useState<'circuit' | 'code'>('circuit');
   const [isLightTheme, setIsLightTheme] = useState(
     typeof document !== 'undefined' && document.documentElement.classList.contains('light-theme')
@@ -95,6 +104,15 @@ export function CodeEditorPanel() {
               <AlertCircle size={13} /> {error}
             </span>
           )}
+          <button
+            type="button"
+            onClick={handleCopyCode}
+            className="flex items-center gap-1 text-xs py-1 px-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition-all cursor-pointer"
+            title="Copy Qiskit Python code"
+          >
+            {copied ? <Check size={12} className="text-[var(--success)]" /> : <Copy size={12} />}
+            <span>{copied ? 'Copied' : 'Copy'}</span>
+          </button>
           <button
             onClick={handleRun}
             disabled={isSimulating}

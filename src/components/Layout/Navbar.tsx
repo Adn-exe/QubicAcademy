@@ -30,13 +30,15 @@ import {
   getUnreadAnnouncementCount,
 } from '../../data/announcementsData';
 
+import { NavbarAuthSkeleton } from '../UI/Skeletons';
+
 export function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
 
   const completedModules = useProgressStore((s) => s.progress.completedModules);
   const profileData = useProfileStore((s) => s.data);
-  const { user, signOut } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
 
   // User menu state
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -620,7 +622,9 @@ export function Navbar() {
             </button>
 
             {/* 3. Profile badge / Sign In */}
-            {user ? (
+            {authLoading ? (
+              <NavbarAuthSkeleton />
+            ) : user ? (
               <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={() => setUserMenuOpen((prev) => !prev)}
