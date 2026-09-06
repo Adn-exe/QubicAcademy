@@ -113,7 +113,6 @@ Please calibrate to my current learning level: **${userLevel}** (${completedCoun
 
     useChatStore.getState().setPendingPrompt(prompt);
     useChatStore.getState().setTutorOpen(true);
-    window.dispatchEvent(new CustomEvent('quantum_ask_tutor', { detail: { prompt } }));
   };
 
   // Reference to lesson content container to reset scroll position on module change

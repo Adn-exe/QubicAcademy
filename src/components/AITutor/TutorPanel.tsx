@@ -176,28 +176,9 @@ export function TutorPanel() {
     if (pendingPrompt && isTutorOpen && !isLoading) {
       const p = pendingPrompt;
       setPendingPrompt(null);
-      // Small tick to ensure UI state renders before async invocation
-      setTimeout(() => {
-        handleSend(p);
-      }, 50);
+      handleSend(p);
     }
   }, [pendingPrompt, isTutorOpen, isLoading, setPendingPrompt, handleSend]);
-
-  // Listen for 1-tap "Ask AI Tutor to elaborate" requests
-  useEffect(() => {
-    const handleAskTutorEvent = (e: Event) => {
-      const customEvent = e as CustomEvent<{ prompt: string }>;
-      if (customEvent.detail?.prompt) {
-        useChatStore.getState().setTutorOpen(true);
-        // Small delay to ensure panel opens and state settles
-        setTimeout(() => {
-          handleSend(customEvent.detail.prompt);
-        }, 150);
-      }
-    };
-    window.addEventListener('quantum_ask_tutor', handleAskTutorEvent);
-    return () => window.removeEventListener('quantum_ask_tutor', handleAskTutorEvent);
-  }, [handleSend]);
 
   const handleLoadCircuit = (jsonStr: string) => {
     try {

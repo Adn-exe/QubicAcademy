@@ -158,15 +158,6 @@ export function LessonVisualizer({ moduleId, onOpenInBuilder }: LessonVisualizer
             <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-lg bg-[#12172A]/85 backdrop-blur-md border border-white/10 text-[11px] font-mono text-slate-300 pointer-events-none shadow-md z-10">
               |ψ⟩ = [{blochVec.x.toFixed(2)}, {blochVec.y.toFixed(2)}, {blochVec.z.toFixed(2)}]
             </div>
-
-            <div className="absolute top-3 right-3 px-2.5 py-1 rounded bg-white/5 border border-white/10 text-[10px] font-mono text-[#4FD1D9] z-10 flex items-center gap-1.5 pointer-events-none">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#4FD1D9] animate-pulse" />
-              3D BLOCH SPHERE (WebGL)
-            </div>
-
-            <div className="absolute bottom-3 right-3 text-[10px] font-mono text-slate-400/80 bg-black/40 px-2 py-0.5 rounded pointer-events-none z-10">
-              Drag to rotate in 3D
-            </div>
           </div>
 
           {/* Controls & Gates */}
@@ -907,46 +898,4 @@ function BlochSphere3DView({ vector }: { vector: { x: number; y: number; z: numb
   );
 }
 
-// Ultra-failsafe vector SVG Bloch Sphere renderer
-export function BlochSphereSVGFallback({ vector }: { vector: { x: number; y: number; z: number } }) {
-  const cx = 180;
-  const cy = 150;
-  const R = 105;
 
-  // Orthographic 2.5D projection: (x, y, z) mapped to SVG canvas coordinates
-  const px = cx + R * (vector.x * 0.707 - vector.y * 0.707);
-  const py = cy - R * (vector.z * 0.82 - (vector.x + vector.y) * 0.22);
-
-  return (
-    <div className="w-full h-full flex flex-col items-center justify-center relative p-2 bg-[#0A0E1A] rounded-2xl select-none">
-      <svg viewBox="0 0 360 300" className="w-full h-full max-h-[320px] drop-shadow-xl">
-        {/* Outer Sphere outline */}
-        <circle cx={cx} cy={cy} r={R} fill="#12172A" stroke="#4FD1D9" strokeWidth="1.5" strokeOpacity="0.3" />
-
-        {/* Latitude Equator Ellipse */}
-        <ellipse cx={cx} cy={cy} rx={R} ry={R * 0.35} fill="none" stroke="#4FD1D9" strokeWidth="1.5" strokeDasharray="3 3" strokeOpacity="0.45" />
-
-        {/* Longitude Guide Ellipse */}
-        <ellipse cx={cx} cy={cy} rx={R * 0.35} ry={R} fill="none" stroke="#4FD1D9" strokeWidth="1" strokeDasharray="3 3" strokeOpacity="0.25" />
-
-        {/* Z Axis (North / South Pole) */}
-        <line x1={cx} y1={cy - R - 14} x2={cx} y2={cy + R + 14} stroke="#4FD1D9" strokeWidth="1.5" strokeOpacity="0.6" />
-        <text x={cx} y={cy - R - 20} textAnchor="middle" fill="#4FD1D9" fontSize="13" fontWeight="bold" fontFamily="monospace">|0⟩ (North)</text>
-        <text x={cx} y={cy + R + 28} textAnchor="middle" fill="#D9A441" fontSize="13" fontWeight="bold" fontFamily="monospace">|1⟩ (South)</text>
-
-        {/* X Axis */}
-        <line x1={cx - R * 0.707} y1={cy + R * 0.25} x2={cx + R * 0.707} y2={cy - R * 0.25} stroke="#4FD1D9" strokeWidth="1.5" strokeOpacity="0.5" />
-        <text x={cx + R * 0.707 + 10} y={cy - R * 0.25 + 4} fill="#4FD1D9" fontSize="11" fontFamily="monospace">X</text>
-
-        {/* Y Axis */}
-        <line x1={cx - R * 0.707} y1={cy - R * 0.25} x2={cx + R * 0.707} y2={cy + R * 0.25} stroke="#4FD1D9" strokeWidth="1.5" strokeOpacity="0.5" />
-        <text x={cx + R * 0.707 + 10} y={cy + R * 0.25 + 4} fill="#4FD1D9" fontSize="11" fontFamily="monospace">Y</text>
-
-        {/* State Vector Ray (Golden Ray to Tip) */}
-        <line x1={cx} y1={cy} x2={px} y2={py} stroke="#D9A441" strokeWidth="3.5" strokeLinecap="round" />
-        <circle cx={px} cy={py} r="6.5" fill="#D9A441" />
-        <circle cx={px} cy={py} r="11" fill="#D9A441" fillOpacity="0.25" />
-      </svg>
-    </div>
-  );
-}
