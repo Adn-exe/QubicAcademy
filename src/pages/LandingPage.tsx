@@ -226,15 +226,15 @@ export function LandingPage() {
                 </div>
 
                 {/* Dedicated Circuit Presets Toolbar (Spacious & Clean) */}
-                <div className="px-4 py-2.5 bg-[#0E1322] light:bg-[#F3F2EC] border-b border-white/10 light:border-black/10 flex items-center justify-between gap-3">
+                <div className="px-4 py-2.5 bg-[#0E1322] light:bg-[#F3F2EC] border-b border-white/10 light:border-black/10 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
                   <span className="text-[11px] font-mono text-slate-400 light:text-slate-600 font-semibold uppercase tracking-wider shrink-0">
-                    Preset Circuit
+                    Preset
                   </span>
 
-                  <div className="flex items-center gap-1.5 sm:gap-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                     <button
                       onClick={() => setActivePreset('bell')}
-                      className={`px-3 py-1 rounded-lg text-xs font-mono transition-all cursor-pointer ${
+                      className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-mono whitespace-nowrap transition-all cursor-pointer ${
                         activePreset === 'bell'
                           ? 'bg-[var(--cryostat-gold)] text-[#0A0E1A] font-bold shadow-md'
                           : 'bg-white/[0.04] light:bg-white text-slate-300 light:text-slate-700 hover:text-white light:hover:text-black hover:bg-white/[0.08] light:hover:bg-slate-50 border border-white/10 light:border-black/10 light:shadow-xs'

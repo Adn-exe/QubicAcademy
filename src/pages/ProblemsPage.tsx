@@ -45,6 +45,7 @@ export function ProblemsPage() {
   const [problems, setProblems] = useState<QuantumProblem[]>(() => loadProblems());
   const [progress, setProgress] = useState<ProblemsProgress>(() => loadProblemsProgress());
   const [expandedProblemId, setExpandedProblemId] = useState<string | null>(null);
+  const [mobileStatsExpanded, setMobileStatsExpanded] = useState(false);
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
@@ -215,16 +216,36 @@ export function ProblemsPage() {
           {/* ======================================================== */}
           {/* LEFT COLUMN: ~280px Your Progress Sidebar Card */}
           {/* ======================================================== */}
-          <aside className="w-full lg:w-[280px] shrink-0 bg-[var(--panel)] border border-white/10 light:border-black/10 rounded-2xl p-5 space-y-6">
-            <div>
-              <h2 className="text-sm font-heading font-bold uppercase tracking-wider text-[var(--ink)] flex items-center justify-between">
-                <span>Your progress</span>
-                <span className="text-xs font-mono font-normal text-slate-400">
+          <aside className="w-full lg:w-[280px] shrink-0 bg-[var(--panel)] border border-white/10 light:border-black/10 rounded-2xl p-4 sm:p-5 space-y-4 lg:space-y-6">
+            <div
+              onClick={() => setMobileStatsExpanded((prev) => !prev)}
+              className="flex items-center justify-between cursor-pointer lg:cursor-default select-none"
+            >
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-heading font-bold uppercase tracking-wider text-[var(--ink)]">
+                  Your progress
+                </h2>
+                <span className="text-xs font-mono font-bold text-[var(--cryostat-gold)] px-2 py-0.5 rounded bg-[var(--cryostat-gold)]/10 border border-[var(--cryostat-gold)]/30">
+                  {stats.totalSolved} / {stats.totalProblems}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-mono text-slate-400">
                   {Math.round((stats.totalSolved / Math.max(1, stats.totalProblems)) * 100)}%
                 </span>
-              </h2>
+                <ChevronDown
+                  size={16}
+                  className={`text-slate-400 transition-transform duration-200 lg:hidden ${
+                    mobileStatsExpanded ? 'rotate-180 text-[var(--signal-cyan)]' : ''
+                  }`}
+                />
+              </div>
+            </div>
 
-              {/* LeetCode-style Horizontal Bars */}
+            {/* Sidebar body: always open on desktop lg:, expandable on mobile */}
+            <div className={`${mobileStatsExpanded ? 'block' : 'hidden lg:block'} space-y-5 lg:space-y-6 animate-fade-in`}>
+              <div>
+                {/* LeetCode-style Horizontal Bars */}
               <div className="mt-4 space-y-3.5">
                 {/* Easy Bar */}
                 <div className="space-y-1.5">
@@ -337,7 +358,8 @@ export function ProblemsPage() {
                 </div>
               )}
             </div>
-          </aside>
+          </div>
+        </aside>
 
           {/* ======================================================== */}
           {/* RIGHT COLUMN: Main Content (Search, Filters, Problems) */}
@@ -458,7 +480,7 @@ export function ProblemsPage() {
             {/* Dense Scannable List of Problems (Bordered rows, LeetCode-style) */}
             <div className="bg-[var(--panel)] border border-white/10 light:border-black/10 rounded-2xl overflow-hidden shadow-xs">
               {/* Header Row */}
-              <div className="grid grid-cols-12 gap-3 px-4 py-3 bg-[var(--void)]/60 border-b border-white/10 light:border-black/10 text-[11px] font-mono uppercase tracking-wider text-slate-400">
+              <div className="hidden sm:grid grid-cols-12 gap-3 px-4 py-3 bg-[var(--void)]/60 border-b border-white/10 light:border-black/10 text-[11px] font-mono uppercase tracking-wider text-slate-400">
                 <div className="col-span-1 flex items-center justify-center">Status</div>
                 <div className="col-span-6 sm:col-span-6 flex items-center gap-1">Title & Objective</div>
                 <div className="col-span-3 sm:col-span-3">Topic</div>
@@ -479,10 +501,10 @@ export function ProblemsPage() {
 
                     return (
                       <div key={problem.id} className="transition-colors">
-                        {/* Problem Row Strip */}
+                        {/* Desktop Problem Row Strip (sm and up) */}
                         <div
                           onClick={() => setExpandedProblemId(isExpanded ? null : problem.id)}
-                          className="grid grid-cols-12 gap-3 px-4 py-3.5 items-center hover:bg-white/[0.03] light:hover:bg-black/[0.03] transition-colors cursor-pointer group"
+                          className="hidden sm:grid grid-cols-12 gap-3 px-4 py-3.5 items-center hover:bg-white/[0.03] light:hover:bg-black/[0.03] transition-colors cursor-pointer group"
                         >
                           {/* Status Icon */}
                           <div className="col-span-1 flex items-center justify-center">
@@ -543,6 +565,67 @@ export function ProblemsPage() {
                               title="Solve problem directly in Circuit Builder"
                             >
                               <Play size={13} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Mobile Problem Row Card (< sm) */}
+                        <div
+                          onClick={() => setExpandedProblemId(isExpanded ? null : problem.id)}
+                          className="sm:hidden flex flex-col gap-2 p-3.5 hover:bg-white/[0.03] light:hover:bg-black/[0.03] transition-colors cursor-pointer"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className="shrink-0">
+                                {isSolved ? (
+                                  <CheckCircle2 size={15} className="text-[var(--success)]" />
+                                ) : isAttempted ? (
+                                  <Circle size={13} className="text-[var(--cryostat-gold)] fill-[var(--cryostat-gold)]/20" />
+                                ) : (
+                                  <Circle size={13} className="text-slate-600" />
+                                )}
+                              </div>
+                              <span className="text-xs font-semibold text-[var(--ink)] truncate">
+                                {problem.title}
+                              </span>
+                              <ChevronDown
+                                size={13}
+                                className={`text-slate-500 shrink-0 transition-transform duration-200 ${
+                                  isExpanded ? 'rotate-180 text-[var(--signal-cyan)]' : ''
+                                }`}
+                              />
+                            </div>
+                            <span
+                              className={`text-[10px] font-mono font-medium shrink-0 px-2 py-0.5 rounded border ${
+                                problem.difficulty === 'Easy'
+                                  ? 'bg-[var(--success)]/10 text-[var(--success)] border-[var(--success)]/30'
+                                  : problem.difficulty === 'Medium'
+                                  ? 'bg-[var(--cryostat-gold)]/10 text-[var(--cryostat-gold)] border-[var(--cryostat-gold)]/30'
+                                  : 'bg-[var(--error)]/10 text-[var(--error)] border-[var(--error)]/30'
+                              }`}
+                            >
+                              {problem.difficulty}
+                            </span>
+                          </div>
+
+                          <p className="text-[11px] text-slate-400 line-clamp-2 pl-6">
+                            {problem.objective || problem.description}
+                          </p>
+
+                          <div className="flex items-center justify-between pl-6 pt-1">
+                            <span className="inline-block text-[10px] font-mono px-2 py-0.5 rounded bg-white/[0.05] light:bg-black/5 text-slate-300 light:text-slate-700 border border-white/10 light:border-black/10">
+                              {problem.topic}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleLaunchProblem(problem);
+                              }}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-mono font-medium text-[var(--cryostat-gold)] bg-[var(--cryostat-gold)]/10 hover:bg-[var(--cryostat-gold)]/20 border border-[var(--cryostat-gold)]/30 transition-all cursor-pointer"
+                            >
+                              <Play size={11} fill="currentColor" />
+                              <span>Solve</span>
                             </button>
                           </div>
                         </div>

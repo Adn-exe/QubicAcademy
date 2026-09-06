@@ -78,12 +78,12 @@ export function CircuitControls({ onToggleCode, showCode }: CircuitControlsProps
   };
 
   return (
-    <div className="flex items-center gap-2 px-4 py-2 glass-light rounded-xl">
+    <div className="w-full flex items-center justify-between gap-2 px-3 sm:px-4 py-2 glass-light rounded-xl overflow-x-auto no-scrollbar touch-pan-x select-none">
       {/* File & Code Actions (Swapped from right) */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5 shrink-0">
         <button
           onClick={handleExportQiskit}
-          className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
+          className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5 shrink-0"
           title="Copy Qiskit code to clipboard"
         >
           {copiedQiskit ? (
@@ -95,38 +95,40 @@ export function CircuitControls({ onToggleCode, showCode }: CircuitControlsProps
             <span>Copy Qiskit</span>
           )}
         </button>
-        <button onClick={handleImport} className="btn-icon" title="Import circuit JSON">
+        <button onClick={handleImport} className="btn-icon shrink-0" title="Import circuit JSON">
           <Upload size={16} />
         </button>
-        <button onClick={handleExport} className="btn-icon" title="Export circuit JSON">
+        <button onClick={handleExport} className="btn-icon shrink-0" title="Export circuit JSON">
           <Download size={16} />
         </button>
       </div>
 
-      <div className="w-px h-6 bg-slate-700 light:bg-slate-300 mx-1" />
+      <div className="w-px h-6 bg-slate-700 light:bg-slate-300 mx-1 shrink-0" />
 
       {/* Undo/Redo */}
-      <button
-        onClick={undo}
-        disabled={historyIndex <= 0}
-        className="btn-icon"
-        title="Undo"
-      >
-        <Undo2 size={16} />
-      </button>
-      <button
-        onClick={redo}
-        disabled={historyIndex >= historyLength - 1}
-        className="btn-icon"
-        title="Redo"
-      >
-        <Redo2 size={16} />
-      </button>
+      <div className="flex items-center gap-1 shrink-0">
+        <button
+          onClick={undo}
+          disabled={historyIndex <= 0}
+          className="btn-icon"
+          title="Undo"
+        >
+          <Undo2 size={16} />
+        </button>
+        <button
+          onClick={redo}
+          disabled={historyIndex >= historyLength - 1}
+          className="btn-icon"
+          title="Redo"
+        >
+          <Redo2 size={16} />
+        </button>
+      </div>
 
-      <div className="w-px h-6 bg-slate-700 light:bg-slate-300 mx-1" />
+      <div className="w-px h-6 bg-slate-700 light:bg-slate-300 mx-1 shrink-0" />
 
       {/* Qubit count */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 shrink-0">
         <button
           onClick={() => setNumQubits(circuit.numQubits - 1)}
           disabled={circuit.numQubits <= 1}
@@ -135,7 +137,7 @@ export function CircuitControls({ onToggleCode, showCode }: CircuitControlsProps
         >
           <Minus size={14} />
         </button>
-        <span className="text-xs font-mono text-slate-400 light:text-slate-600 min-w-[60px] text-center">
+        <span className="text-xs font-mono text-slate-400 light:text-slate-600 min-w-[55px] text-center">
           {circuit.numQubits} qubit{circuit.numQubits > 1 ? 's' : ''}
         </span>
         <button
@@ -148,33 +150,33 @@ export function CircuitControls({ onToggleCode, showCode }: CircuitControlsProps
         </button>
       </div>
 
-      <div className="w-px h-6 bg-slate-700 light:bg-slate-300 mx-1" />
+      <div className="w-px h-6 bg-slate-700 light:bg-slate-300 mx-1 shrink-0" />
 
-      {/* Clear */}
-      <button
-        onClick={clearCircuit}
-        className="btn-icon"
-        title="Clear circuit"
-      >
-        <Trash2 size={16} />
-      </button>
+      {/* Clear & Code toggle */}
+      <div className="flex items-center gap-1 shrink-0">
+        <button
+          onClick={clearCircuit}
+          className="btn-icon"
+          title="Clear circuit"
+        >
+          <Trash2 size={16} />
+        </button>
+        <button
+          onClick={onToggleCode}
+          className={`btn-icon ${showCode ? 'bg-quantum-600/30 text-quantum-300' : ''}`}
+          title="Toggle code editor"
+        >
+          <Code size={16} />
+        </button>
+      </div>
 
-      {/* Code toggle */}
-      <button
-        onClick={onToggleCode}
-        className={`btn-icon ${showCode ? 'bg-quantum-600/30 text-quantum-300' : ''}`}
-        title="Toggle code editor"
-      >
-        <Code size={16} />
-      </button>
-
-      <div className="flex-1" />
+      <div className="flex-1 min-w-[12px]" />
 
       {/* Primary Run Simulation Button (Swapped to right CTA) */}
       <button
         onClick={() => runSimulation()}
         disabled={isSimulating || circuit.steps.length === 0}
-        className="btn-primary py-2 px-4 text-xs font-bold shadow-md hover:scale-[1.02] active:scale-[0.98] transition-transform flex items-center gap-2"
+        className="btn-primary py-2 px-3.5 sm:px-4 text-xs font-bold shadow-md hover:scale-[1.02] active:scale-[0.98] transition-transform flex items-center gap-2 shrink-0"
         title="Run simulation"
       >
         {isSimulating ? <div className="spinner" /> : <Play size={15} fill="currentColor" />}

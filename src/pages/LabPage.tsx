@@ -13,6 +13,9 @@ import {
   ArrowLeft,
   X,
   RotateCcw,
+  Layers,
+  Cpu,
+  BarChart3,
 } from 'lucide-react';
 import { CircuitCanvas } from '../components/CircuitBuilder/CircuitCanvas';
 import { GatePalette } from '../components/CircuitBuilder/GatePalette';
@@ -67,6 +70,7 @@ export function LabPage() {
     message: string;
   }>({ status: null, message: '' });
   const [showConfetti, setShowConfetti] = useState(false);
+  const [mobileTab, setMobileTab] = useState<'palette' | 'circuit' | 'visuals'>('circuit');
 
   const simulationResult = useCircuitStore((s) => s.simulationResult);
   const circuit = useCircuitStore((s) => s.circuit);
@@ -274,15 +278,54 @@ export function LabPage() {
         <CircuitControls onToggleCode={() => setShowCode(!showCode)} showCode={showCode} />
       </div>
 
+      {/* Mobile View Switcher (< lg) */}
+      <div className="lg:hidden px-4 pb-2 shrink-0">
+        <div className="flex items-center p-1 bg-white/[0.04] light:bg-black/[0.04] border border-white/10 light:border-black/10 rounded-xl">
+          <button
+            onClick={() => setMobileTab('palette')}
+            className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-mono font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+              mobileTab === 'palette'
+                ? 'bg-[var(--signal-cyan)] text-[var(--void)] font-bold shadow'
+                : 'text-slate-400 hover:text-[var(--ink)]'
+            }`}
+          >
+            <Layers size={13} />
+            <span>Gates</span>
+          </button>
+          <button
+            onClick={() => setMobileTab('circuit')}
+            className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-mono font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+              mobileTab === 'circuit'
+                ? 'bg-[var(--signal-cyan)] text-[var(--void)] font-bold shadow'
+                : 'text-slate-400 hover:text-[var(--ink)]'
+            }`}
+          >
+            <Cpu size={13} />
+            <span>Circuit</span>
+          </button>
+          <button
+            onClick={() => setMobileTab('visuals')}
+            className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-mono font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+              mobileTab === 'visuals'
+                ? 'bg-[var(--signal-cyan)] text-[var(--void)] font-bold shadow'
+                : 'text-slate-400 hover:text-[var(--ink)]'
+            }`}
+          >
+            <BarChart3 size={13} />
+            <span>Visuals</span>
+          </button>
+        </div>
+      </div>
+
       {/* Main workspace */}
       <div className="flex-1 flex overflow-hidden px-4 pb-4 gap-3">
         {/* Left: Gate Palette */}
-        <div className="w-[220px] shrink-0 glass-light rounded-xl overflow-hidden flex flex-col">
+        <div className={`${mobileTab === 'palette' ? 'flex flex-1' : 'hidden'} lg:flex lg:w-[220px] lg:shrink-0 glass-light rounded-xl overflow-hidden flex-col`}>
           <GatePalette />
         </div>
 
         {/* Center: Circuit Canvas + Code Editor */}
-        <div className="flex-1 flex flex-col gap-3 min-w-0">
+        <div className={`${mobileTab === 'circuit' ? 'flex flex-1' : 'hidden'} lg:flex lg:flex-1 flex-col gap-3 min-w-0`}>
           {/* Circuit Canvas */}
           <div className={`${showCode ? 'h-1/2' : 'flex-1'} min-h-[200px]`}>
             <CircuitCanvas />
@@ -297,7 +340,7 @@ export function LabPage() {
         </div>
 
         {/* Right: Visualization Panel */}
-        <div className="w-[340px] shrink-0 flex flex-col gap-3">
+        <div className={`${mobileTab === 'visuals' ? 'flex flex-1 overflow-y-auto' : 'hidden'} lg:flex lg:w-[340px] lg:shrink-0 flex-col gap-3`}>
           {/* Bloch Spheres */}
           <div className="glass-light rounded-xl overflow-hidden shrink-0 border border-white/10">
             <BlochSpherePanel
