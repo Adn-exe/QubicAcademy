@@ -189,37 +189,45 @@ export function CodeEditorPanel() {
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2">
-          {error && (
-            <span className="text-[11px] text-rose-400 inline-flex items-center gap-1 max-w-[200px] truncate" title={error}>
-              <AlertCircle size={12} className="shrink-0 text-rose-400" />
-              <span>{error}</span>
-            </span>
-          )}
+        {/* Uncluttered Unified Action Pill */}
+        <div className="flex items-center bg-white/[0.06] light:bg-slate-200 p-0.5 rounded-lg border border-white/10 light:border-slate-300 shrink-0">
           <button
             type="button"
             onClick={handleCopyCode}
-            className="flex items-center gap-1 text-xs py-1 px-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition-all cursor-pointer"
-            title="Copy Python code"
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
+              copied
+                ? 'bg-emerald-500/20 text-emerald-400'
+                : 'text-slate-300 light:text-slate-700 hover:text-white hover:bg-white/10 light:hover:bg-white'
+            }`}
+            title="Copy Qiskit Python code"
           >
             {copied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
             <span>{copied ? 'Copied' : 'Copy'}</span>
           </button>
+          <div className="w-px h-3.5 bg-white/10 light:bg-slate-300 mx-0.5" />
           <button
             onClick={handleRun}
             disabled={isSimulating}
-            className="btn-success text-xs py-1 px-3 flex items-center gap-1.5 shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-transform"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-[#4FD1D9] hover:bg-[#38b2ac] text-[#0A0E1A] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-xs active:scale-[0.98]"
+            title="Execute circuit from code"
           >
             {isSimulating ? (
-              <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span className="w-3 h-3 border-2 border-[#0A0E1A]/30 border-t-[#0A0E1A] rounded-full animate-spin" />
             ) : (
-              <Play size={12} />
+              <Play size={11} fill="currentColor" />
             )}
             <span>Run</span>
           </button>
         </div>
       </div>
+
+      {/* Non-colliding Slim Error Banner */}
+      {error && (
+        <div className="px-3 py-1 bg-rose-500/10 border-b border-rose-500/20 text-rose-400 text-xs flex items-center gap-1.5 shrink-0 animate-fade-in">
+          <AlertCircle size={12} className="shrink-0" />
+          <span className="truncate">{error}</span>
+        </div>
+      )}
 
       {/* Editor Body */}
       <div className="flex-1 relative min-h-0 bg-[#0A0E1A] light:bg-slate-50">

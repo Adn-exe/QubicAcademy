@@ -79,16 +79,29 @@ export function CircuitControls({ onToggleCode, showCode }: CircuitControlsProps
 
   return (
     <div className="flex items-center gap-2 px-4 py-2 glass-light rounded-xl">
-      {/* Run button — single primary CTA in --cryostat-gold */}
-      <button
-        onClick={() => runSimulation()}
-        disabled={isSimulating || circuit.steps.length === 0}
-        className="btn-primary py-2 px-4 text-xs font-bold"
-        title="Run simulation"
-      >
-        {isSimulating ? <div className="spinner" /> : <Play size={16} fill="currentColor" />}
-        Run Simulation
-      </button>
+      {/* File & Code Actions (Swapped from right) */}
+      <div className="flex items-center gap-1.5">
+        <button
+          onClick={handleExportQiskit}
+          className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
+          title="Copy Qiskit code to clipboard"
+        >
+          {copiedQiskit ? (
+            <>
+              <Check size={14} className="text-emerald-400" />
+              <span>Copied!</span>
+            </>
+          ) : (
+            <span>Copy Qiskit</span>
+          )}
+        </button>
+        <button onClick={handleImport} className="btn-icon" title="Import circuit JSON">
+          <Upload size={16} />
+        </button>
+        <button onClick={handleExport} className="btn-icon" title="Export circuit JSON">
+          <Download size={16} />
+        </button>
+      </div>
 
       <div className="w-px h-6 bg-slate-700 light:bg-slate-300 mx-1" />
 
@@ -157,26 +170,15 @@ export function CircuitControls({ onToggleCode, showCode }: CircuitControlsProps
 
       <div className="flex-1" />
 
-      {/* Import/Export */}
-      <button onClick={handleImport} className="btn-icon" title="Import circuit JSON">
-        <Upload size={16} />
-      </button>
-      <button onClick={handleExport} className="btn-icon" title="Export circuit JSON">
-        <Download size={16} />
-      </button>
+      {/* Primary Run Simulation Button (Swapped to right CTA) */}
       <button
-        onClick={handleExportQiskit}
-        className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
-        title="Copy Qiskit code to clipboard"
+        onClick={() => runSimulation()}
+        disabled={isSimulating || circuit.steps.length === 0}
+        className="btn-primary py-2 px-4 text-xs font-bold shadow-md hover:scale-[1.02] active:scale-[0.98] transition-transform flex items-center gap-2"
+        title="Run simulation"
       >
-        {copiedQiskit ? (
-          <>
-            <Check size={14} className="text-emerald-400" />
-            <span>Copied!</span>
-          </>
-        ) : (
-          <span>Copy Qiskit</span>
-        )}
+        {isSimulating ? <div className="spinner" /> : <Play size={15} fill="currentColor" />}
+        <span>Run Simulation</span>
       </button>
     </div>
   );
