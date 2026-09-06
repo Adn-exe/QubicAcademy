@@ -85,26 +85,12 @@ export function ModulePage() {
 
 
   // Reading Comfort Settings (persisted to localStorage)
-  const [readingFont, setReadingFont] = useState<'serif' | 'sans'>(() => {
-    if (typeof window !== 'undefined') {
-      return (localStorage.getItem('qubiq-reading-font') as 'serif' | 'sans') || 'serif';
-    }
-    return 'serif';
-  });
-
   const [readingSize, setReadingSize] = useState<'sm' | 'base' | 'lg'>(() => {
     if (typeof window !== 'undefined') {
       return (localStorage.getItem('qubiq-reading-size') as 'sm' | 'base' | 'lg') || 'base';
     }
     return 'base';
   });
-
-  const handleSetReadingFont = (font: 'serif' | 'sans') => {
-    setReadingFont(font);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('qubiq-reading-font', font);
-    }
-  };
 
   const handleSetReadingSize = (size: 'sm' | 'base' | 'lg') => {
     setReadingSize(size);
@@ -598,34 +584,11 @@ Please calibrate to my current learning level: **${userLevel}** (${completedCoun
                   <span>{currentModule.estimatedMinutes} min read</span>
                 </div>
 
-                {/* Reader Comfort Controls (Serif/Sans toggle + Font Size scaler) */}
-                <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#0c101d] light:bg-slate-100 border border-white/10 light:border-slate-300 shadow-xs">
-                  {/* Typeface Toggle */}
-                  <div className="flex items-center p-0.5 rounded-lg bg-white/[0.04] light:bg-white border border-white/5 light:border-slate-200">
-                    <button
-                      type="button"
-                      onClick={() => handleSetReadingFont('serif')}
-                      className={`px-2.5 py-0.5 rounded text-[11px] font-editorial-serif transition-all cursor-pointer ${
-                        readingFont === 'serif'
-                          ? 'bg-[#4FD1D9] text-[#0A0E1A] font-bold shadow-xs'
-                          : 'text-slate-400 light:text-slate-600 hover:text-white light:hover:text-black'
-                      }`}
-                      title="Editorial Serif (Newsreader) — recommended for textbooks & long-form reading"
-                    >
-                      Serif
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSetReadingFont('sans')}
-                      className={`px-2.5 py-0.5 rounded text-[11px] font-sans transition-all cursor-pointer ${
-                        readingFont === 'sans'
-                          ? 'bg-[#4FD1D9] text-[#0A0E1A] font-bold shadow-xs'
-                          : 'text-slate-400 light:text-slate-600 hover:text-white light:hover:text-black'
-                      }`}
-                      title="Modern Sans (Inter)"
-                    >
-                      Sans
-                    </button>
+                {/* Medium Reader Comfort Controls (Font Size scaler) */}
+                <div className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-[#0c101d] light:bg-slate-100 border border-white/10 light:border-slate-300 shadow-xs">
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#4FD1D9] light:text-[#0D9488]">
+                    <BookOpen size={13} className="shrink-0" />
+                    <span>Medium Reading Mode</span>
                   </div>
 
                   <div className="w-px h-3.5 bg-white/10 light:bg-slate-300" />
@@ -640,7 +603,7 @@ Please calibrate to my current learning level: **${userLevel}** (${completedCoun
                           ? 'bg-white/10 light:bg-slate-200 text-[#4FD1D9] light:text-[#0D9488] font-bold'
                           : 'text-slate-400 hover:text-white light:hover:text-black'
                       }`}
-                      title="Compact text (15px)"
+                      title="Compact text (15.5px)"
                     >
                       A-
                     </button>
@@ -652,7 +615,7 @@ Please calibrate to my current learning level: **${userLevel}** (${completedCoun
                           ? 'bg-white/10 light:bg-slate-200 text-[#4FD1D9] light:text-[#0D9488] font-bold'
                           : 'text-slate-400 hover:text-white light:hover:text-black'
                       }`}
-                      title="Standard text (16.5px)"
+                      title="Medium Standard text (17.5px)"
                     >
                       A
                     </button>
@@ -664,7 +627,7 @@ Please calibrate to my current learning level: **${userLevel}** (${completedCoun
                           ? 'bg-white/10 light:bg-slate-200 text-[#4FD1D9] light:text-[#0D9488] font-bold'
                           : 'text-slate-400 hover:text-white light:hover:text-black'
                       }`}
-                      title="Large comfortable text (18.5px)"
+                      title="Large comfortable text (19.5px)"
                     >
                       A+
                     </button>
@@ -693,16 +656,12 @@ Please calibrate to my current learning level: **${userLevel}** (${completedCoun
                     {section.title}
                   </h2>
                   <div
-                    className={`curriculum-prose max-w-none transition-all duration-150 ${
-                      readingFont === 'serif'
-                        ? 'font-editorial-serif text-[#CBD5E1] light:text-[#2D3748]'
-                        : 'font-editorial-sans text-slate-200 light:text-slate-800'
-                    } ${
+                    className={`curriculum-prose font-medium-reading max-w-none transition-all duration-150 ${
                       readingSize === 'sm'
-                        ? 'text-[15px]'
+                        ? 'text-[15.5px]'
                         : readingSize === 'lg'
-                        ? 'text-[18.5px]'
-                        : 'text-[16.5px]'
+                        ? 'text-[19.5px]'
+                        : 'text-[17.5px]'
                     }`}
                     dangerouslySetInnerHTML={{ __html: formatModuleContent(section.content) }}
                   />

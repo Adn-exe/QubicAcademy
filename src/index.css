@@ -752,14 +752,14 @@ html.light-theme .circuit-canvas {
 }
 
 /* ============================================================
-   Editorial Quantum Reading Typography & Dirac Ket Treatments
+   Medium App Editorial Typography
+   Plus Jakarta Sans & Söhne stack with Medium-calibrated rhythm
    ============================================================ */
-.font-editorial-serif {
-  font-family: 'Newsreader', Charter, Georgia, 'Times New Roman', serif;
-}
-
-.font-editorial-sans {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+.font-medium-reading {
+  font-family: 'Plus Jakarta Sans', sohne, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  letter-spacing: -0.011em;
+  font-feature-settings: "kern", "liga", "clig", "calt";
+  text-rendering: optimizeLegibility;
 }
 
 /* Dirac Quantum Ket Badge */
@@ -801,28 +801,35 @@ html.light-theme .quantum-ket:hover {
   border-color: rgba(13, 148, 136, 0.5);
 }
 
-/* Curriculum Reading Typography Container */
+/* Curriculum Reading Typography Container (Medium Style) */
 .curriculum-prose {
   max-width: 72ch;
+  font-family: 'Plus Jakarta Sans', sohne, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  letter-spacing: -0.011em;
   text-rendering: optimizeLegibility;
   font-feature-settings: "kern", "liga", "clig", "calt";
+  color: #D4D8E0;
+}
+
+html.light-theme .curriculum-prose {
+  color: #242424; /* Medium's exact signature body charcoal */
 }
 
 .curriculum-prose p {
-  line-height: 1.8;
-  margin-bottom: 1.25rem;
-}
-
-.curriculum-prose.font-editorial-serif p {
-  line-height: 1.85;
-  letter-spacing: 0.005em;
+  line-height: 1.75;
+  margin-bottom: 1.5rem;
 }
 
 .curriculum-prose strong {
   font-weight: 600;
-  color: var(--ink);
+  color: #FFFFFF;
+}
+
+html.light-theme .curriculum-prose strong {
+  color: #191919;
 }
 
 .curriculum-prose em {
   font-style: italic;
+  opacity: 0.95;
 }
