@@ -155,8 +155,8 @@ export function CodeEditorPanel() {
       {/* Header Bar */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-white/10 bg-[#0c101d] light:bg-slate-100 shrink-0">
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-300 light:text-slate-700 text-xs font-mono">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#4FD1D9] animate-pulse" />
             <span>Qiskit v1.0</span>
           </div>
 
@@ -277,7 +277,7 @@ export function CodeEditorPanel() {
                 autoCapitalize="off"
                 autoComplete="off"
                 autoCorrect="off"
-                className="w-full h-full p-2.5 bg-transparent text-emerald-300 light:text-slate-800 font-mono text-xs leading-5 resize-none outline-none border-0 focus:ring-0 selection:bg-[#4FD1D9]/30"
+                className="w-full h-full p-2.5 bg-transparent text-slate-200 light:text-slate-800 font-mono text-xs leading-5 resize-none outline-none border-0 focus:ring-0 selection:bg-[#4FD1D9]/30"
                 placeholder="# Enter Qiskit quantum code here..."
               />
             </div>
