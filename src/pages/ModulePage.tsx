@@ -13,7 +13,6 @@ import {
   ChevronDown,
   Lock,
   CheckCircle2,
-  Clock,
   BookOpen,
   Bot,
   FileText,
@@ -21,8 +20,6 @@ import {
   Check,
   X,
   Play,
-  PanelLeftClose,
-  PanelLeftOpen,
   ExternalLink,
   Atom,
   BarChart3,
@@ -86,8 +83,6 @@ export function ModulePage() {
     algorithms: false,
   });
 
-  // Sidebar Tab: 'syllabus' | 'glossary' | 'notes' (Study Navigator)
-  const [sidebarTab, setSidebarTab] = useState<'syllabus' | 'glossary' | 'notes'>('syllabus');
 
   // Auto-populate circuit sandbox when module changes & execute initial simulation
   useEffect(() => {
@@ -144,15 +139,34 @@ Please calibrate to my current learning level: **${userLevel}** (${completedCoun
     localStorage.setItem(`quantumlearn-note-${currentModule.id}`, val);
   };
 
-  // Study Navigator desktop collapse/expand state
-  const [isNavigatorCollapsed, setIsNavigatorCollapsed] = useState(false);
+  // Study Navigator Slide-Over Drawer state & active tab
+  const [isStudyDrawerOpen, setIsStudyDrawerOpen] = useState(false);
+  const [sidebarTab, setSidebarTab] = useState<'syllabus' | 'glossary' | 'notes'>('syllabus');
+
+  // Quick module switcher dropdown state
+  const [isModuleDropdownOpen, setIsModuleDropdownOpen] = useState(false);
+  const moduleDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close module switcher dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (moduleDropdownRef.current && !moduleDropdownRef.current.contains(event.target as Node)) {
+        setIsModuleDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const openStudyDrawer = (tab: 'syllabus' | 'glossary' | 'notes') => {
+    setSidebarTab(tab);
+    setIsStudyDrawerOpen(true);
+    setIsModuleDropdownOpen(false);
+  };
 
   // Quiz state: selected options & submitted checks
   const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
   const [quizSubmitted, setQuizSubmitted] = useState<Record<string, boolean>>({});
-
-  // Mobile drawer state for sidebar
-  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
   // Track accordion toggler
   const toggleTrack = (trackId: string) => {
@@ -196,54 +210,154 @@ Please calibrate to my current learning level: **${userLevel}** (${completedCoun
   return (
     <div className="flex-1 flex flex-col bg-[var(--void)] overflow-hidden">
       {/* ============================================================
-          TOP BAR: Module Title, Progress Bar, Back Link
+          TOP BAR: Module Switcher Popover, Study Tools, Progress
          ============================================================ */}
-      <div className="h-13 px-4 sm:px-6 bg-[#12172A] light:bg-[#F7F6F1] border-b border-white/10 light:border-slate-300 flex items-center justify-between shrink-0 z-20 transition-colors">
-        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+      <div className="h-14 px-4 sm:px-6 bg-[#12172A] light:bg-[#F7F6F1] border-b border-white/10 light:border-slate-300 flex items-center justify-between shrink-0 z-30 transition-colors">
+        {/* Left: Back Link & Interactive Module Switcher Dropdown */}
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
             onClick={() => navigate('/')}
-            className="shrink-0 text-xs text-slate-400 light:text-slate-600 hover:text-white light:hover:text-black flex items-center gap-1.5 font-medium transition-colors cursor-pointer"
+            className="shrink-0 text-xs text-slate-400 light:text-slate-600 hover:text-white light:hover:text-black flex items-center gap-1 font-medium transition-colors cursor-pointer py-1 px-1.5 rounded-lg hover:bg-white/5"
+            title="Back to Course Overview"
           >
             <ChevronLeft size={16} />
-            <span className="hidden sm:inline">Back to Overview</span>
+            <span className="hidden sm:inline">Overview</span>
           </button>
 
-          <span className="text-slate-600 hidden sm:inline shrink-0">|</span>
+          <span className="text-slate-600 shrink-0">/</span>
 
-          {/* Desktop Toggle Study Navigator */}
-          <button
-            onClick={() => setIsNavigatorCollapsed((c) => !c)}
-            className="hidden md:flex shrink-0 items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#0A0E1A] light:bg-white text-slate-300 light:text-slate-700 hover:text-white light:hover:text-black border border-white/10 light:border-slate-300 light:shadow-xs text-xs font-medium transition-colors cursor-pointer"
-            title={isNavigatorCollapsed ? 'Expand Study Navigator' : 'Collapse Study Navigator for full width reading'}
-          >
-            {isNavigatorCollapsed ? (
-              <>
-                <PanelLeftOpen size={14} className="text-[#4FD1D9] light:text-[#20878E]" />
-                <span>Study Navigator</span>
-              </>
-            ) : (
-              <>
-                <PanelLeftClose size={14} />
-                <span>Hide Navigator</span>
-              </>
+          {/* Module Switcher Dropdown Anchor */}
+          <div className="relative" ref={moduleDropdownRef}>
+            <button
+              onClick={() => setIsModuleDropdownOpen((o) => !o)}
+              className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-[#0A0E1A] light:bg-white text-slate-200 light:text-slate-800 hover:text-white light:hover:text-black border border-white/10 light:border-slate-300 text-xs font-semibold transition-all cursor-pointer shadow-xs hover:border-[#4FD1D9]/40 group"
+              title="Click to jump to another module"
+            >
+              <span className="shrink-0 flex items-center justify-center">
+                {getTrackModuleIcon(currentModule.icon, 14)}
+              </span>
+              <span className="truncate max-w-[130px] sm:max-w-[240px] md:max-w-[340px]">
+                {currentModule.title}
+              </span>
+              <ChevronDown
+                size={13}
+                className={`text-slate-400 group-hover:text-[#4FD1D9] transition-transform ${
+                  isModuleDropdownOpen ? 'rotate-180 text-[#4FD1D9]' : ''
+                }`}
+              />
+            </button>
+
+            {/* Floating Module Switcher Popover */}
+            {isModuleDropdownOpen && (
+              <div className="absolute left-0 top-full mt-2 w-80 sm:w-96 rounded-2xl bg-[#0F1424] light:bg-white border border-white/15 light:border-slate-300 shadow-[0_16px_40px_rgba(0,0,0,0.6)] p-3 z-50 animate-fade-in backdrop-blur-xl">
+                <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10 light:border-slate-200">
+                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 light:text-slate-600">
+                    Syllabus ({completedCount}/{totalModuleCount} Done)
+                  </span>
+                  <button
+                    onClick={() => openStudyDrawer('syllabus')}
+                    className="text-[11px] text-[#4FD1D9] hover:underline font-mono cursor-pointer"
+                  >
+                    Open Drawer →
+                  </button>
+                </div>
+
+                <div className="max-h-[340px] overflow-y-auto space-y-1 pr-1">
+                  {allModules.map((m, idx) => {
+                    const isCurrent = m.id === currentModule.id;
+                    const isCompleted = progress.completedModules.includes(m.id);
+                    const isLocked =
+                      m.prerequisites.length > 0 &&
+                      !m.prerequisites.every((req) => progress.completedModules.includes(req));
+
+                    return (
+                      <button
+                        key={m.id}
+                        disabled={isLocked}
+                        onClick={() => {
+                          setIsModuleDropdownOpen(false);
+                          navigate(`/learn/${m.id}`);
+                        }}
+                        className={`w-full p-2.5 rounded-xl text-left flex items-center justify-between transition-all ${
+                          isCurrent
+                            ? 'bg-[#4FD1D9]/15 border border-[#4FD1D9]/40 text-white light:text-black font-semibold'
+                            : isLocked
+                            ? 'opacity-40 cursor-not-allowed bg-transparent'
+                            : 'hover:bg-white/5 light:hover:bg-slate-100 text-slate-300 light:text-slate-700 cursor-pointer border border-transparent'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <span className="text-[11px] font-mono text-slate-400 shrink-0">
+                            0{idx + 1}
+                          </span>
+                          <span className="shrink-0">{getTrackModuleIcon(m.icon, 14)}</span>
+                          <div className="min-w-0">
+                            <div className="text-xs truncate font-medium">{m.title}</div>
+                            <div className="text-[10px] font-mono text-slate-400 capitalize">
+                              {m.difficulty} &bull; {m.estimatedMinutes}m
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="shrink-0 pl-2">
+                          {isLocked ? (
+                            <Lock size={12} className="text-slate-500" />
+                          ) : isCompleted ? (
+                            <CheckCircle2 size={14} className="text-[#D9A441]" />
+                          ) : isCurrent ? (
+                            <span className="w-2 h-2 rounded-full bg-[#4FD1D9] animate-pulse block" />
+                          ) : null}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             )}
-          </button>
-
-          <div className="flex items-center gap-2 truncate min-w-0">
-            <span className="shrink-0 flex items-center justify-center">{getTrackModuleIcon(currentModule.icon)}</span>
-            <span className="text-xs sm:text-sm font-bold text-white light:text-slate-900 font-heading truncate">
-              {currentModule.title}
-            </span>
           </div>
         </div>
 
-        {/* Course Progress Indicator */}
-        <div className="flex items-center gap-3">
-          <div className="flex flex-col items-end">
-            <span className="text-[11px] font-mono text-slate-400">
-              Course Progress: <strong className="text-[#4FD1D9]">{progressPercent}%</strong>
+        {/* Right: Study Tools Pills & Progress */}
+        <div className="flex items-center gap-2 sm:gap-4">
+          {/* Quick Study Tools Pills */}
+          <div className="flex items-center gap-1 bg-[#0A0E1A] light:bg-[#EAE8E0] p-1 rounded-xl border border-white/10 light:border-slate-300">
+            <button
+              onClick={() => openStudyDrawer('syllabus')}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-slate-300 light:text-slate-700 hover:text-white light:hover:text-black hover:bg-white/5 transition-colors cursor-pointer"
+              title="Open Syllabus & Course Path"
+            >
+              <BookOpen size={13} className="text-[#4FD1D9]" />
+              <span className="hidden sm:inline">Syllabus</span>
+              <span className="text-[10px] font-mono text-slate-400">
+                ({completedCount}/{totalModuleCount})
+              </span>
+            </button>
+
+            <button
+              onClick={() => openStudyDrawer('glossary')}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-slate-300 light:text-slate-700 hover:text-white light:hover:text-black hover:bg-white/5 transition-colors cursor-pointer"
+              title="Open Key Terms Glossary"
+            >
+              <Bookmark size={13} className="text-[#D9A441]" />
+              <span className="hidden sm:inline">Glossary</span>
+            </button>
+
+            <button
+              onClick={() => openStudyDrawer('notes')}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-slate-300 light:text-slate-700 hover:text-white light:hover:text-black hover:bg-white/5 transition-colors cursor-pointer"
+              title="Open Notebook"
+            >
+              <FileText size={13} className="text-emerald-400" />
+              <span className="hidden sm:inline">Notes</span>
+            </button>
+          </div>
+
+          {/* Compact Course Progress bar */}
+          <div className="hidden lg:flex flex-col items-end shrink-0 pl-1">
+            <span className="text-[10px] font-mono text-slate-400">
+              Progress: <strong className="text-[#4FD1D9]">{progressPercent}%</strong>
             </span>
-            <div className="w-28 sm:w-36 h-1.5 bg-slate-800 rounded-full overflow-hidden mt-1">
+            <div className="w-24 h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5">
               <div
                 className="h-full rounded-full transition-all duration-500"
                 style={{
@@ -253,241 +367,198 @@ Please calibrate to my current learning level: **${userLevel}** (${completedCoun
               />
             </div>
           </div>
-
-          {/* Mobile Sidebar Toggle Button */}
-          <button
-            onClick={() => setMobileDrawerOpen((o) => !o)}
-            className="md:hidden p-1.5 rounded-lg bg-[#0A0E1A] text-slate-300 border border-white/10"
-            title="Toggle Syllabus & Study Navigator"
-          >
-            <BookOpen size={16} />
-          </button>
         </div>
       </div>
 
       {/* ============================================================
-          THREE-COLUMN MAIN WORKSPACE
+          SLIDE-OVER STUDY DRAWER (Overlay - Never cramps reading space)
          ============================================================ */}
-      <div className="flex-1 flex overflow-hidden relative">
-        {/* ============================================================
-            COLUMN 1 (LEFT): Module Navigation (Sidebar, --panel bg)
-           ============================================================ */}
-        <aside
-          className={`
-            fixed md:relative inset-y-0 left-0 z-30 md:z-auto
-            bg-[#12172A] light:bg-[#EFEFE9] border-r border-white/10 light:border-black/10 flex flex-col shrink-0
-            transition-all duration-300 ease-in-out overflow-hidden
-            ${mobileDrawerOpen ? 'translate-x-0 w-80' : '-translate-x-full md:translate-x-0'}
-            ${isNavigatorCollapsed ? 'hidden md:hidden' : 'md:flex md:w-80'}
-          `}
-        >
-          {/* Header with Title & Tab Switcher */}
-          <div className="p-3.5 border-b border-white/10 light:border-black/10 space-y-3 w-80">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-bold tracking-wider uppercase text-slate-300 light:text-slate-700">
-                  Study Navigator
-                </span>
-                <span className="text-[11px] font-mono text-[#D9A441] bg-[#D9A441]/10 px-1.5 py-0.5 rounded">
-                  {completedCount}/{totalModuleCount} Done
-                </span>
-              </div>
-              <button
-                onClick={() => {
-                  setIsNavigatorCollapsed(true);
-                  setMobileDrawerOpen(false);
-                }}
-                className="p-1 text-slate-400 light:text-slate-600 hover:text-white light:hover:text-black hover:bg-white/5 light:hover:bg-black/5 rounded-md transition-colors cursor-pointer"
-                title="Collapse or close Study Navigator"
-              >
-                <X size={16} className="md:hidden" />
-                <ChevronLeft size={16} className="hidden md:block" />
-              </button>
-            </div>
+      {isStudyDrawerOpen && (
+        <div
+          onClick={() => setIsStudyDrawerOpen(false)}
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 transition-opacity animate-fade-in"
+        />
+      )}
 
-            {/* Navigation Tabs: Syllabus, Glossary, Notes */}
-            <div className="flex p-1 rounded-xl bg-[#0A0E1A] light:bg-[#E2E0D8] border border-white/5 light:border-black/10 gap-1">
-              {[
-                { key: 'syllabus', label: 'Syllabus', icon: BookOpen },
-                { key: 'glossary', label: 'Glossary', icon: Bookmark },
-                { key: 'notes', label: 'Notes', icon: FileText },
-              ].map((tab) => {
-                const Icon = tab.icon;
-                const isActive = sidebarTab === tab.key;
-                return (
-                  <button
-                    key={tab.key}
-                    onClick={() => setSidebarTab(tab.key as any)}
-                    className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-all ${
-                      isActive
-                        ? 'bg-[#4FD1D9]/20 text-[#4FD1D9] border border-[#4FD1D9]/30 font-semibold shadow-xs'
-                        : 'text-slate-400 hover:text-white hover:bg-white/5'
-                    }`}
-                  >
-                    <Icon size={13} />
-                    <span>{tab.label}</span>
-                  </button>
-                );
-              })}
+      <aside
+        className={`
+          fixed inset-y-0 left-0 z-50 w-full sm:w-[380px]
+          bg-[#0F1424] light:bg-[#F7F6F1] border-r border-white/15 light:border-slate-300
+          shadow-[0_24px_60px_rgba(0,0,0,0.7)] flex flex-col
+          transition-transform duration-300 ease-out
+          ${isStudyDrawerOpen ? 'translate-x-0' : '-translate-x-full pointer-events-none'}
+        `}
+      >
+        {/* Header with Title, Progress Badge & Close Button */}
+        <div className="p-4 border-b border-white/10 light:border-slate-200 space-y-3 shrink-0">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-mono font-bold tracking-wider uppercase text-white light:text-slate-900">
+                Study Navigator
+              </span>
+              <span className="text-[11px] font-mono text-[#D9A441] bg-[#D9A441]/10 px-2 py-0.5 rounded-full border border-[#D9A441]/20">
+                {completedCount}/{totalModuleCount} Done
+              </span>
             </div>
+            <button
+              onClick={() => setIsStudyDrawerOpen(false)}
+              className="p-1.5 text-slate-400 light:text-slate-600 hover:text-white light:hover:text-black hover:bg-white/10 light:hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
+              title="Close Study Navigator"
+            >
+              <X size={18} />
+            </button>
           </div>
 
-          {/* TAB 1: Syllabus & Modules */}
-          {sidebarTab === 'syllabus' && (
-            <div className="flex-1 overflow-y-auto p-3 space-y-3">
-              {courseTracks.map((track) => {
-                const isExpanded = expandedTracks[track.id] ?? true;
-                const trackModules = allModules.filter((m) => track.moduleIds.includes(m.id));
+          {/* Navigation Tabs: Syllabus, Glossary, Notes */}
+          <div className="flex p-1 rounded-xl bg-[#0A0E1A] light:bg-[#E2E0D8] border border-white/5 light:border-black/10 gap-1">
+            {[
+              { key: 'syllabus', label: 'Syllabus', icon: BookOpen },
+              { key: 'glossary', label: 'Glossary', icon: Bookmark },
+              { key: 'notes', label: 'Notes', icon: FileText },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = sidebarTab === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setSidebarTab(tab.key as any)}
+                  className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-[#4FD1D9]/20 text-[#4FD1D9] border border-[#4FD1D9]/30 font-semibold shadow-xs'
+                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <Icon size={13} />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
-                return (
-                  <div key={track.id} className="rounded-xl bg-[#0A0E1A]/40 border border-white/5 overflow-hidden">
-                    {/* Track Header (Accordion Clickable) */}
-                    <button
-                      onClick={() => toggleTrack(track.id)}
-                      className="w-full px-3 py-2.5 flex items-center justify-between text-left hover:bg-white/5 transition-colors"
-                    >
-                      <span className="text-xs font-bold text-slate-300 uppercase tracking-wider font-mono">
-                        {track.title}
-                      </span>
-                      <ChevronDown
-                        size={14}
-                        className={`text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                      />
-                    </button>
+        {/* TAB 1: Syllabus & Modules */}
+        {sidebarTab === 'syllabus' && (
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            {courseTracks.map((track) => {
+              const isExpanded = expandedTracks[track.id] ?? true;
+              const trackModules = allModules.filter((m) => track.moduleIds.includes(m.id));
 
-                    {/* Modules within Track */}
-                    {isExpanded && (
-                      <div className="py-1 space-y-0.5">
-                        {trackModules.map((m) => {
-                          const isCurrent = m.id === currentModule.id;
-                          const isCompleted = progress.completedModules.includes(m.id);
-                          const isLocked =
-                            m.prerequisites.length > 0 &&
-                            !m.prerequisites.every((req) => progress.completedModules.includes(req));
-
-                          return (
-                            <button
-                              key={m.id}
-                              disabled={isLocked}
-                              onClick={() => {
-                                navigate(`/learn/${m.id}`);
-                                setMobileDrawerOpen(false);
-                              }}
-                              className={`
-                                w-full px-3 py-2 text-left flex items-center justify-between transition-all group
-                                ${
-                                  isCurrent
-                                    ? 'border-l-3 border-[#D9A441] bg-white/5 text-white font-medium pl-[9px]'
-                                    : 'border-l-3 border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/[0.02]'
-                                }
-                                ${isLocked ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
-                              `}
-                            >
-                              <div className="flex items-center gap-2.5 min-w-0">
-                                {isLocked ? (
-                                  <Lock size={12} className="text-slate-500 shrink-0" />
-                                ) : isCompleted ? (
-                                  <span className="w-2.5 h-2.5 rounded-full bg-[#D9A441] shrink-0 shadow-xs" />
-                                ) : isCurrent ? (
-                                  <span className="w-2.5 h-2.5 rounded-full bg-[#4FD1D9] shrink-0 ring-2 ring-[#4FD1D9]/30" />
-                                ) : (
-                                  <span className="w-2.5 h-2.5 rounded-full border border-slate-600 shrink-0" />
-                                )}
-
-                                <span className="text-xs truncate">{m.title}</span>
-                              </div>
-
-                              <span className="text-[10px] font-mono text-slate-500 flex items-center gap-0.5 shrink-0 ml-2">
-                                <Clock size={10} />
-                                {m.estimatedMinutes}m
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {/* TAB 2: Glossary */}
-          {sidebarTab === 'glossary' && (
-            <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
-              <div className="flex items-center gap-1.5 text-xs text-slate-400 mb-1">
-                <Bookmark size={14} className="text-[#D9A441]" />
-                <span className="font-mono uppercase tracking-wider text-[11px]">Key Terminology</span>
-              </div>
-
-              {currentModule.glossary && currentModule.glossary.length > 0 ? (
-                currentModule.glossary.map((item, i) => (
-                  <div
-                    key={i}
-                    className="p-3 rounded-xl bg-[#0A0E1A]/60 border border-white/5 space-y-1 hover:border-[#4FD1D9]/30 transition-all group"
+              return (
+                <div key={track.id} className="rounded-xl bg-[#0A0E1A]/60 border border-white/5 overflow-hidden">
+                  <button
+                    onClick={() => toggleTrack(track.id)}
+                    className="w-full px-3.5 py-2.5 flex items-center justify-between text-left hover:bg-white/5 transition-colors cursor-pointer"
                   >
-                    <h4 className="text-xs font-bold text-[#4FD1D9] group-hover:text-white transition-colors">
-                      {item.term}
-                    </h4>
-                    <p className="text-xs text-slate-400 leading-relaxed">{item.definition}</p>
-                  </div>
-                ))
-              ) : (
-                <p className="text-xs text-slate-500 italic p-2">No terms defined for this module.</p>
-              )}
-            </div>
-          )}
+                    <span className="text-xs font-bold text-slate-300 uppercase tracking-wider font-mono">
+                      {track.title}
+                    </span>
+                    <ChevronDown
+                      size={14}
+                      className={`text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                    />
+                  </button>
 
-          {/* TAB 3: Notes */}
-          {sidebarTab === 'notes' && (
-            <div className="flex-1 flex flex-col p-3 space-y-2">
-              <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
-                <span className="flex items-center gap-1 font-mono uppercase tracking-wider text-[11px]">
-                  <FileText size={14} className="text-[#D9A441]" />
-                  Your Notes ({currentModule.title})
-                </span>
-                <span className="text-[10px] text-slate-500">Auto-saved</span>
-              </div>
+                  {isExpanded && (
+                    <div className="py-1 space-y-0.5">
+                      {trackModules.map((m) => {
+                        const isCurrent = m.id === currentModule.id;
+                        const isCompleted = progress.completedModules.includes(m.id);
+                        const isLocked =
+                          m.prerequisites.length > 0 &&
+                          !m.prerequisites.every((req) => progress.completedModules.includes(req));
 
-              <textarea
-                value={notes}
-                onChange={(e) => handleSaveNotes(e.target.value)}
-                placeholder="Record derivations, ideas, and notes on this module..."
-                className="flex-1 w-full bg-[#0A0E1A] border border-white/10 rounded-xl p-3 text-xs font-sans text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-[#D9A441]/50 resize-none leading-relaxed"
-              />
-            </div>
-          )}
-        </aside>
+                        return (
+                          <button
+                            key={m.id}
+                            disabled={isLocked}
+                            onClick={() => {
+                              navigate(`/learn/${m.id}`);
+                              setIsStudyDrawerOpen(false);
+                            }}
+                            className={`
+                              w-full px-3.5 py-2 text-left flex items-center justify-between transition-all group
+                              ${
+                                isCurrent
+                                  ? 'border-l-3 border-[#D9A441] bg-white/5 text-white font-medium pl-[11px]'
+                                  : 'border-l-3 border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/[0.02]'
+                              }
+                              ${isLocked ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+                            `}
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              {isLocked ? (
+                                <Lock size={12} className="text-slate-500 shrink-0" />
+                              ) : isCompleted ? (
+                                <span className="w-2.5 h-2.5 rounded-full bg-[#D9A441] shrink-0 shadow-xs" />
+                              ) : (
+                                <span className="w-2.5 h-2.5 rounded-full border border-slate-600 shrink-0" />
+                              )}
+                              <span className="text-xs truncate font-sans">{m.title}</span>
+                            </div>
 
-        {/* Mobile backdrop for drawer */}
-        {mobileDrawerOpen && (
-          <div
-            onClick={() => setMobileDrawerOpen(false)}
-            className="fixed inset-0 bg-black/60 z-20 md:hidden"
-          />
+                            <span className="text-[11px] font-mono text-slate-500 shrink-0 ml-2">
+                              {m.estimatedMinutes}m
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         )}
 
-        {/* ============================================================
-            COLUMN 2 (CENTER): Lesson Reading Content (Adaptive paper surface)
-           ============================================================ */}
+        {/* TAB 2: Glossary */}
+        {sidebarTab === 'glossary' && (
+          <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
+            {currentModule.glossary && currentModule.glossary.length > 0 ? (
+              currentModule.glossary.map((item) => (
+                <div key={item.term} className="p-3 rounded-xl bg-[#0A0E1A]/60 border border-white/5 space-y-1">
+                  <h4 className="text-xs font-bold text-[#4FD1D9] font-mono flex items-center gap-1.5">
+                    <Bookmark size={12} className="text-[#D9A441]" />
+                    {item.term}
+                  </h4>
+                  <p className="text-xs text-slate-400 leading-relaxed">{item.definition}</p>
+                </div>
+              ))
+            ) : (
+              <p className="text-xs text-slate-500 italic p-2">No terms defined for this module.</p>
+            )}
+          </div>
+        )}
+
+        {/* TAB 3: Notes */}
+        {sidebarTab === 'notes' && (
+          <div className="flex-1 flex flex-col p-4 space-y-2">
+            <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+              <span className="flex items-center gap-1 font-mono uppercase tracking-wider text-[11px]">
+                <FileText size={14} className="text-[#D9A441]" />
+                Your Notes ({currentModule.title})
+              </span>
+              <span className="text-[10px] text-slate-500 font-mono">Auto-saved</span>
+            </div>
+
+            <textarea
+              value={notes}
+              onChange={(e) => handleSaveNotes(e.target.value)}
+              placeholder="Record derivations, insights, questions, and ideas on this module..."
+              className="flex-1 w-full bg-[#0A0E1A] border border-white/10 rounded-xl p-3 text-xs font-sans text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-[#D9A441]/50 resize-none leading-relaxed"
+            />
+          </div>
+        )}
+      </aside>
+
+      {/* ============================================================
+          MAIN WORKSPACE: Clean, spacious, centered reading experience
+         ============================================================ */}
+      <div className="flex-1 flex overflow-hidden relative w-full">
         <main
           ref={contentRef}
-          className="flex-1 overflow-y-auto paper-surface relative flex flex-col items-center"
+          className="flex-1 overflow-y-auto paper-surface relative flex flex-col items-center w-full"
         >
-          {/* Floating edge tab when navigator is collapsed */}
-          {isNavigatorCollapsed && (
-            <button
-              type="button"
-              onClick={() => setIsNavigatorCollapsed(false)}
-              className="hidden md:flex fixed left-0 top-1/2 -translate-y-1/2 z-40 items-center gap-1.5 px-2.5 py-3 rounded-r-xl bg-[#12172A] light:bg-white border border-l-0 border-white/20 light:border-slate-300 text-xs font-mono text-[#4FD1D9] light:text-[#20878E] hover:text-white light:hover:text-black shadow-2xl cursor-pointer transition-all hover:pl-3"
-              title="Expand Study Navigator"
-            >
-              <PanelLeftOpen size={16} />
-              <span className="text-[11px] font-semibold">Navigator</span>
-            </button>
-          )}
-
-          <div className={`w-full px-6 sm:px-12 py-10 space-y-10 text-left transition-all duration-300 ${isNavigatorCollapsed ? 'max-w-5xl' : 'max-w-4xl'}`}>
+          <div className="w-full px-6 sm:px-12 py-10 space-y-10 text-left max-w-4xl">
             {/* 1. Module Title & Meta */}
             <div className="border-b border-white/10 pb-6">
               <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-slate-400 mb-2">

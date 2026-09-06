@@ -10,11 +10,11 @@
 // Grounded in tokens: --signal-cyan (#4FD1D9), --cryostat-gold (#D9A441), --panel (#12172A)
 // ============================================================
 
-import { useState, useMemo, Suspense } from 'react';
+import { useState, useMemo } from 'react';
 import { Bot, ExternalLink, RotateCcw, Link2, Eye, Compass, Waves } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Text, Line } from '@react-three/drei';
+import { OrbitControls, Html, Line } from '@react-three/drei';
 import * as THREE from 'three';
 import { useChatStore } from '../../core/store';
 import { MeasurementVisualizer } from './MeasurementVisualizer';
@@ -142,26 +142,17 @@ export function LessonVisualizer({ moduleId, onOpenInBuilder }: LessonVisualizer
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
           {/* 3D WebGL Bloch Sphere Canvas with OrbitControls */}
           <div className="md:col-span-7 h-[360px] w-full relative flex items-center justify-center rounded-2xl bg-[#0A0E1A] border border-white/10 overflow-hidden shadow-2xl">
-            <Suspense
-              fallback={
-                <div className="flex flex-col items-center justify-center text-slate-500 text-xs">
-                  <Compass size={24} className="text-[#4FD1D9] animate-spin mb-2" />
-                  <span>Rendering 3D Bloch Sphere...</span>
-                </div>
-              }
+            <Canvas
+              style={{ width: '100%', height: '100%', display: 'block' }}
+              camera={{ position: [2.3, 1.8, 2.3], fov: 42 }}
+              gl={{ antialias: true, alpha: true }}
             >
-              <Canvas
-                style={{ width: '100%', height: '100%', display: 'block' }}
-                camera={{ position: [2.3, 1.8, 2.3], fov: 42 }}
-                gl={{ antialias: true, alpha: true }}
-              >
-                <ambientLight intensity={0.65} />
-                <pointLight position={[5, 5, 5]} intensity={0.9} />
-                <pointLight position={[-4, -4, -4]} intensity={0.3} />
-                <BlochSphere3DView vector={blochVec} />
-                <OrbitControls enableZoom={false} enablePan={false} rotateSpeed={0.7} />
-              </Canvas>
-            </Suspense>
+              <ambientLight intensity={0.7} />
+              <pointLight position={[5, 5, 5]} intensity={0.9} />
+              <pointLight position={[-4, -4, -4]} intensity={0.3} />
+              <BlochSphere3DView vector={blochVec} />
+              <OrbitControls enableZoom={false} enablePan={false} rotateSpeed={0.7} />
+            </Canvas>
 
             {/* State vector coordinate badge */}
             <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-lg bg-[#12172A]/85 backdrop-blur-md border border-white/10 text-[11px] font-mono text-slate-300 pointer-events-none shadow-md z-10">
@@ -884,19 +875,25 @@ function BlochSphere3DView({ vector }: { vector: { x: number; y: number; z: numb
       {axes.map((axis) => (
         <group key={axis.label}>
           <Line points={[axis.from, axis.to]} color={axis.color} lineWidth={1.2} transparent opacity={0.4} />
-          <Text position={axis.to} fontSize={0.14} color={axis.color} anchorX="center" anchorY="middle">
-            {axis.label}
-          </Text>
+          <Html center position={axis.to}>
+            <span style={{ color: axis.color, fontSize: '11px', fontFamily: 'monospace', fontWeight: 'bold', userSelect: 'none', pointerEvents: 'none' }}>
+              {axis.label}
+            </span>
+          </Html>
         </group>
       ))}
 
       {/* |0⟩ North and |1⟩ South labels */}
-      <Text position={[0, 1.22, 0]} fontSize={0.15} color="#4FD1D9">
-        |0⟩
-      </Text>
-      <Text position={[0, -1.22, 0]} fontSize={0.15} color="#D9A441">
-        |1⟩
-      </Text>
+      <Html center position={[0, 1.25, 0]}>
+        <span style={{ color: '#4FD1D9', fontSize: '13px', fontFamily: 'monospace', fontWeight: 'bold', userSelect: 'none', pointerEvents: 'none', textShadow: '0 0 10px rgba(79,209,217,0.6)' }}>
+          |0⟩
+        </span>
+      </Html>
+      <Html center position={[0, -1.25, 0]}>
+        <span style={{ color: '#D9A441', fontSize: '13px', fontFamily: 'monospace', fontWeight: 'bold', userSelect: 'none', pointerEvents: 'none', textShadow: '0 0 10px rgba(217,164,65,0.6)' }}>
+          |1⟩
+        </span>
+      </Html>
 
       {/* Golden State Vector Arrow & Tip */}
       <group>

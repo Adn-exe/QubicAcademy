@@ -5,7 +5,7 @@
 
 import { useState, useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Text, Line } from '@react-three/drei';
+import { OrbitControls, Html, Line } from '@react-three/drei';
 import * as THREE from 'three';
 import { Compass } from 'lucide-react';
 import type { BlochVector } from '../../core/types';
@@ -65,8 +65,8 @@ export function BlochSpherePanel({ blochVectors }: BlochSphereProps) {
           camera={{ position: [2.2, 1.8, 2.2], fov: 40 }}
           gl={{ antialias: true, alpha: true }}
         >
-          <ambientLight intensity={0.5} />
-          <pointLight position={[5, 5, 5]} intensity={0.7} />
+          <ambientLight intensity={0.7} />
+          <pointLight position={[5, 5, 5]} intensity={0.8} />
           <BlochSphere3D vector={activeVec} />
           <OrbitControls
             enableZoom={false}
@@ -140,25 +140,25 @@ function BlochSphere3D({ vector }: { vector: BlochVector }) {
             transparent
             opacity={0.35}
           />
-          <Text
-            position={axis.to}
-            fontSize={0.14}
-            color={axis.color}
-            anchorX="center"
-            anchorY="middle"
-          >
-            {axis.label}
-          </Text>
+          <Html center position={axis.to}>
+            <span style={{ color: axis.color, fontSize: '10px', fontFamily: 'monospace', fontWeight: 'bold', userSelect: 'none', pointerEvents: 'none' }}>
+              {axis.label}
+            </span>
+          </Html>
         </group>
       ))}
 
       {/* |0⟩ and |1⟩ labels */}
-      <Text position={[0, 1.18, 0]} fontSize={0.13} color="#4FD1D9">
-        |0⟩
-      </Text>
-      <Text position={[0, -1.18, 0]} fontSize={0.13} color="#D9A441">
-        |1⟩
-      </Text>
+      <Html center position={[0, 1.2, 0]}>
+        <span style={{ color: '#4FD1D9', fontSize: '11px', fontFamily: 'monospace', fontWeight: 'bold', userSelect: 'none', pointerEvents: 'none', textShadow: '0 0 8px rgba(79,209,217,0.5)' }}>
+          |0⟩
+        </span>
+      </Html>
+      <Html center position={[0, -1.2, 0]}>
+        <span style={{ color: '#D9A441', fontSize: '11px', fontFamily: 'monospace', fontWeight: 'bold', userSelect: 'none', pointerEvents: 'none', textShadow: '0 0 8px rgba(217,164,65,0.5)' }}>
+          |1⟩
+        </span>
+      </Html>
 
       {/* State vector arrow in --cryostat-gold (#D9A441) */}
       <group ref={arrowRef} position={[0, 0, 0]}>
