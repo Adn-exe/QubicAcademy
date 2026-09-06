@@ -3,12 +3,13 @@
 // Styled with --paper (#F7F6F1) explanation surface & --ink text
 // ============================================================
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MessageSquare, Send, X, Trash2, Download } from 'lucide-react';
-import { useChatStore, useCircuitStore } from '../../core/store';
+import { useChatStore, useCircuitStore, useProgressStore } from '../../core/store';
 import { sendTutorMessage, extractCircuitFromResponse } from '../../services/ai-tutor';
 import type { ChatMessage, TutorContext } from '../../core/types';
+import { allModules } from '../../data/modules/superposition-module';
 
 const SUGGESTED_PROMPTS = [
   'What is superposition?',
@@ -33,6 +34,30 @@ export function TutorPanel() {
   const circuit = useCircuitStore((s) => s.circuit);
   const simulationResult = useCircuitStore((s) => s.simulationResult);
   const loadCircuit = useCircuitStore((s) => s.loadCircuit);
+  const completedModules = useProgressStore((s) => s.progress.completedModules);
+
+  // Compute curriculum module lock status dynamically based on learner's completed modules
+  const { lockedModuleSlugs, unlockedList, lockedList } = useMemo(() => {
+    const locked = new Set<string>();
+    const uList: string[] = [];
+    const lList: string[] = [];
+
+    allModules.forEach((m) => {
+      const isUnlocked = m.prerequisites.every((req) => completedModules.includes(req));
+      if (isUnlocked) {
+        uList.push(`${m.title} (/learn/${m.id})`);
+      } else {
+        locked.add(m.id);
+        lList.push(`${m.title} (/learn/${m.id})`);
+      }
+    });
+
+    return {
+      lockedModuleSlugs: locked,
+      unlockedList: uList,
+      lockedList: lList,
+    };
+  }, [completedModules]);
 
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -53,18 +78,20 @@ export function TutorPanel() {
   // Client-side rate-limiting cooldown (anti-spam & quota defense)
   const [cooldownSec, setCooldownSec] = useState(0);
 
+  // Cooldown countdown timer
   useEffect(() => {
     if (cooldownSec <= 0) return;
-    const interval = setInterval(() => {
+    const timer = setInterval(() => {
       setCooldownSec((prev) => Math.max(0, prev - 1));
     }, 1000);
-    return () => clearInterval(interval);
+    return () => clearInterval(timer);
   }, [cooldownSec]);
 
-  // Auto-scroll to bottom
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (isTutorOpen) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, isTutorOpen]);
 
   // Focus input when panel opens
   useEffect(() => {
@@ -73,9 +100,9 @@ export function TutorPanel() {
     }
   }, [isTutorOpen]);
 
-  const handleSend = useCallback(async (messageText?: string) => {
-    const text = messageText || input.trim();
-    if (!text || isLoading || cooldownSec > 0) return;
+  const handleSend = useCallback(async (promptText?: string) => {
+    const text = promptText || input.trim();
+    if (!text || isLoading) return;
 
     setInput('');
     setCooldownSec(3); // 3-second cooldown to protect API quotas
@@ -95,6 +122,9 @@ export function TutorPanel() {
         simulationResult: simulationResult,
         currentModule: null,
         currentChallenge: null,
+        completedModules,
+        unlockedModules: unlockedList,
+        lockedModules: lockedList,
       };
 
       const reply = await sendTutorMessage(text, context);
@@ -117,7 +147,7 @@ export function TutorPanel() {
     } finally {
       setLoading(false);
     }
-  }, [input, isLoading, circuit, simulationResult, messages, addMessage, setLoading]);
+  }, [input, isLoading, circuit, simulationResult, completedModules, unlockedList, lockedList, addMessage, setLoading]);
 
   const handleLoadCircuit = (jsonStr: string) => {
     try {
@@ -163,7 +193,7 @@ export function TutorPanel() {
   }
 
   return (
-    <div className="fixed right-0 top-0 h-full w-[400px] bg-[#12172A] light:bg-[#F7F6F1] text-slate-100 light:text-[#1B1E24] border-l border-white/10 light:border-black/10 flex flex-col z-50 animate-slide-in-right shadow-2xl backdrop-blur-xl">
+    <div className="fixed right-0 top-0 h-full w-[94vw] sm:w-[520px] md:w-[580px] lg:w-[620px] max-w-[660px] bg-[#12172A] light:bg-[#F7F6F1] text-slate-100 light:text-[#1B1E24] border-l border-white/10 light:border-black/10 flex flex-col z-50 animate-slide-in-right shadow-2xl backdrop-blur-xl transition-all duration-300">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/10 light:border-black/10 bg-[#0A0E1A] light:bg-[#EDECE7]">
         <div className="flex items-center gap-2.5">
@@ -260,16 +290,17 @@ export function TutorPanel() {
           <MessageBubble
             key={msg.id}
             message={msg}
+            lockedModuleSlugs={lockedModuleSlugs}
             onLoadCircuit={handleLoadCircuit}
           />
         ))}
 
         {isLoading && (
-          <div className="flex items-start gap-2">
-            <div className="w-7 h-7 rounded-lg bg-white/[0.04] light:bg-black/5 text-[var(--cryostat-gold)] border border-white/10 light:border-black/10 flex items-center justify-center shrink-0">
+          <div className="flex items-start gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-white/[0.04] light:bg-black/5 text-[var(--cryostat-gold)] border border-white/10 light:border-black/10 flex items-center justify-center shrink-0">
               <svg
-                width="14"
-                height="14"
+                width="16"
+                height="16"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -284,7 +315,7 @@ export function TutorPanel() {
                 <line x1="15.2" y1="12" x2="18.2" y2="12" />
               </svg>
             </div>
-            <div className="flex gap-1.5 py-2.5 bg-[#12172A] light:bg-white px-3.5 rounded-xl border border-white/10 light:border-black/10 shadow-xs">
+            <div className="flex gap-2 py-3 bg-[#12172A] light:bg-white px-4 rounded-xl border border-white/10 light:border-black/10 shadow-xs">
               <div className="w-2 h-2 bg-[#D9A441] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
               <div className="w-2 h-2 bg-[#D9A441] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
               <div className="w-2 h-2 bg-[#D9A441] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
@@ -296,27 +327,27 @@ export function TutorPanel() {
       </div>
 
       {/* Input */}
-      <div className="p-3 border-t border-white/10 light:border-black/10 bg-[#0A0E1A] light:bg-[#EDECE7]">
-        <div className="flex gap-2">
+      <div className="p-4 border-t border-white/10 light:border-black/10 bg-[#0A0E1A] light:bg-[#EDECE7]">
+        <div className="flex gap-2.5">
           <input
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             placeholder="Ask about quantum computing..."
-            className="flex-1 px-3.5 py-2 rounded-xl bg-[#12172A] light:bg-white border border-white/10 light:border-black/10 text-sm text-slate-100 light:text-[#1B1E24] placeholder-slate-500 light:placeholder-slate-400 outline-none focus:border-[#D9A441] transition-colors shadow-xs"
+            className="flex-1 px-4 py-2.5 rounded-xl bg-[#12172A] light:bg-white border border-white/10 light:border-black/10 text-sm text-slate-100 light:text-[#1B1E24] placeholder-slate-500 light:placeholder-slate-400 outline-none focus:border-[#D9A441] transition-colors shadow-xs"
             disabled={isLoading}
           />
           <button
             onClick={() => handleSend()}
             disabled={!input.trim() || isLoading || cooldownSec > 0}
-            className="py-2 px-3 rounded-xl bg-[#D9A441] hover:bg-[#c49235] text-[#0A0E1A] font-bold transition-all disabled:opacity-40 flex items-center justify-center min-w-[40px] cursor-pointer"
+            className="py-2.5 px-4 rounded-xl bg-[#D9A441] hover:bg-[#c49235] text-[#0A0E1A] font-bold transition-all disabled:opacity-40 flex items-center justify-center min-w-[44px] cursor-pointer shadow-xs"
             title={cooldownSec > 0 ? `Please wait ${cooldownSec}s before next question` : 'Send question'}
           >
             {cooldownSec > 0 ? (
               <span className="text-xs font-mono font-bold">{cooldownSec}s</span>
             ) : (
-              <Send size={16} />
+              <Send size={17} />
             )}
           </button>
         </div>
@@ -329,9 +360,11 @@ export function TutorPanel() {
 
 function MessageBubble({
   message,
+  lockedModuleSlugs,
   onLoadCircuit,
 }: {
   message: ChatMessage;
+  lockedModuleSlugs?: Set<string>;
   onLoadCircuit: (json: string) => void;
   isLoading?: boolean;
 }) {
@@ -355,21 +388,21 @@ function MessageBubble({
   };
 
   return (
-    <div className={`flex items-start gap-2.5 ${isUser ? 'flex-row-reverse' : ''} animate-fade-in`}>
+    <div className={`flex items-start gap-3 ${isUser ? 'flex-row-reverse' : ''} animate-fade-in`}>
       {/* Avatar */}
       <div
-        className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+        className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
           isUser
-            ? 'bg-[#D9A441] text-[#0A0E1A] font-bold'
-            : 'bg-white/[0.04] light:bg-black/5 text-[var(--cryostat-gold)] border border-white/10 light:border-black/10'
+            ? 'bg-[#D9A441] text-[#0A0E1A] font-bold shadow-xs'
+            : 'bg-white/[0.04] light:bg-black/5 text-[var(--cryostat-gold)] border border-white/10 light:border-black/10 shadow-xs'
         }`}
       >
         {isUser ? (
-          <MessageSquare size={13} />
+          <MessageSquare size={14} />
         ) : (
           <svg
-            width="14"
-            height="14"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -388,7 +421,7 @@ function MessageBubble({
 
       {/* Content */}
       <div
-        className={`max-w-[85%] px-3.5 py-2.5 rounded-xl text-xs sm:text-sm leading-relaxed ${
+        className={`max-w-[90%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
           isUser
             ? 'bg-[#D9A441]/20 text-slate-100 light:text-slate-900 border border-[#D9A441]/40 rounded-tr-none shadow-xs'
             : 'bg-[#12172A] light:bg-white text-slate-200 light:text-slate-800 rounded-tl-none border border-white/10 light:border-black/10 shadow-xs'
@@ -396,16 +429,16 @@ function MessageBubble({
       >
         <div
           onClick={handleContentClick}
-          className="prose prose-invert light:prose-slate prose-sm max-w-none text-inherit [&_h2]:text-sm [&_h2]:font-bold [&_h2]:mt-2 [&_h2]:mb-1 [&_p]:mb-1.5 [&_ul]:mb-1 [&_code]:text-[#4FD1D9] light:[&_code]:text-[#20878E] [&_code]:bg-[#0A0E1A] light:[&_code]:bg-slate-100 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_strong]:text-white light:[&_strong]:text-slate-900"
-          dangerouslySetInnerHTML={{ __html: formatMarkdown(displayContent) }}
+          className="prose prose-invert light:prose-slate prose-sm max-w-none text-inherit [&_h2]:text-base [&_h2]:font-bold [&_h2]:mt-3 [&_h2]:mb-1.5 [&_h3]:text-sm [&_h3]:font-bold [&_h3]:mt-2.5 [&_h3]:mb-1 [&_p]:mb-2 [&_ul]:mb-1.5 [&_code]:text-[#4FD1D9] light:[&_code]:text-[#20878E] [&_code]:bg-[#0A0E1A] light:[&_code]:bg-slate-100 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_strong]:text-white light:[&_strong]:text-slate-900"
+          dangerouslySetInnerHTML={{ __html: formatMarkdown(displayContent, lockedModuleSlugs) }}
         />
 
         {circuitJson && (
           <button
             onClick={() => onLoadCircuit(circuitJson)}
-            className="mt-2.5 flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg bg-[#4FD1D9]/20 text-[#4FD1D9] hover:bg-[#4FD1D9]/30 font-semibold transition-colors border border-[#4FD1D9]/30"
+            className="mt-3 flex items-center gap-1.5 text-xs sm:text-sm px-3 py-1.5 rounded-xl bg-[#4FD1D9]/20 text-[#4FD1D9] hover:bg-[#4FD1D9]/30 font-semibold transition-colors border border-[#4FD1D9]/30 cursor-pointer shadow-xs"
           >
-            <Download size={13} />
+            <Download size={14} />
             Load circuit into builder
           </button>
         )}
@@ -449,7 +482,7 @@ function cleanLatexMath(str: string): string {
 
 // --- Structured Markdown Formatter for Crisp & Uncluttered Layout ---
 
-function formatMarkdown(raw: string): string {
+function formatMarkdown(raw: string, lockedSlugs?: Set<string>): string {
   if (!raw) return '';
 
   // 1. Extract and preserve code blocks
@@ -462,9 +495,9 @@ function formatMarkdown(raw: string): string {
       .replace(/>/g, '&gt;');
     const langLabel = lang ? `<span class="text-[10px] font-mono uppercase text-slate-400 select-none">${lang}</span>` : '';
     codeBlocks.push(
-      `<div class="my-2.5 rounded-lg bg-[#070A12] border border-white/10 overflow-hidden font-mono text-xs">
-        ${langLabel ? `<div class="px-3 py-1 bg-white/[0.03] border-b border-white/5 flex justify-between items-center">${langLabel}</div>` : ''}
-        <pre class="p-3 overflow-x-auto text-[var(--signal-cyan)] leading-relaxed">${escaped.trim()}</pre>
+      `<div class="my-3 rounded-xl bg-[#070A12] border border-white/10 overflow-hidden font-mono text-xs sm:text-sm">
+        ${langLabel ? `<div class="px-3.5 py-1.5 bg-white/[0.03] border-b border-white/5 flex justify-between items-center">${langLabel}</div>` : ''}
+        <pre class="p-3.5 overflow-x-auto text-[var(--signal-cyan)] leading-relaxed">${escaped.trim()}</pre>
       </div>`
     );
     return placeholder;
@@ -477,7 +510,6 @@ function formatMarkdown(raw: string): string {
   text = text.replace(/\[([^\]]+)\]\(([^)\n]*)$/, (_, label, partialUrl) => {
     let cleanUrl = partialUrl.trim();
     if (!cleanUrl.endsWith('/')) {
-      // try to complete module path if cut off e.g. /learn/grovers -> /learn/grovers-search
       if (cleanUrl.includes('/learn/grover')) cleanUrl = '/learn/grovers-search';
       else if (cleanUrl.includes('/learn/deutsch')) cleanUrl = '/learn/deutsch-jozsa';
       else if (cleanUrl.includes('/learn/superposition')) cleanUrl = '/learn/superposition-single-qubit';
@@ -495,12 +527,12 @@ function formatMarkdown(raw: string): string {
     .replace(/>/g, '&gt;');
 
   // 3. Format inline code
-  text = text.replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 rounded bg-white/[0.08] text-[var(--signal-cyan)] font-mono text-[11px]">$1</code>');
+  text = text.replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 rounded bg-white/[0.08] text-[var(--signal-cyan)] font-mono text-xs">$1</code>');
 
   // 4. Headers
-  text = text.replace(/^### (.*$)/gm, '<h3 class="text-xs font-bold text-white uppercase tracking-wider mt-3 mb-1 font-heading">$1</h3>');
-  text = text.replace(/^## (.*$)/gm, '<h2 class="text-sm font-bold text-[var(--cryostat-gold)] mt-3.5 mb-1.5 font-heading pb-1 border-b border-white/5">$1</h2>');
-  text = text.replace(/^# (.*$)/gm, '<h1 class="text-base font-bold text-white mt-4 mb-2 font-heading">$1</h1>');
+  text = text.replace(/^### (.*$)/gm, '<h3 class="text-xs sm:text-sm font-bold text-white uppercase tracking-wider mt-3.5 mb-1.5 font-heading">$1</h3>');
+  text = text.replace(/^## (.*$)/gm, '<h2 class="text-sm sm:text-base font-bold text-[var(--cryostat-gold)] mt-4 mb-2 font-heading pb-1 border-b border-white/5">$1</h2>');
+  text = text.replace(/^# (.*$)/gm, '<h1 class="text-base sm:text-lg font-bold text-white mt-4.5 mb-2 font-heading">$1</h1>');
 
   // 5. Bold & Italic
   text = text.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>');
@@ -513,10 +545,22 @@ function formatMarkdown(raw: string): string {
     if (!cleanUrl.startsWith('/') && (cleanUrl.startsWith('learn/') || cleanUrl.startsWith('lab') || cleanUrl.startsWith('problems'))) {
       cleanUrl = '/' + cleanUrl;
     }
-    // Clean trailing arrows or whitespace inside link label
     const cleanLabel = linkText.replace(/[→\->\s]+$/g, '').trim();
+
+    // Check if this link points to a locked learning module
+    const match = cleanUrl.match(/^\/learn\/([a-zA-Z0-9_-]+)/);
+    const moduleSlug = match ? match[1] : null;
+    if (moduleSlug && lockedSlugs && lockedSlugs.has(moduleSlug)) {
+      // Render as a non-clickable locked indicator badge
+      return `<span class="inline-flex items-center gap-1.5 my-1 px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-300 light:text-amber-800 text-xs font-medium border border-amber-500/25 select-none cursor-not-allowed shadow-xs" title="Complete prerequisite modules to unlock this module">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-amber-400"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        <span>${cleanLabel}</span>
+        <span class="text-[10px] font-mono uppercase tracking-wider text-amber-400 bg-amber-400/20 px-1.5 py-0.5 rounded font-bold">Locked</span>
+      </span>`;
+    }
+
     const isInternal = cleanUrl.startsWith('/');
-    return `<a href="${cleanUrl}" data-link="${cleanUrl}" class="tutor-nav-btn inline-flex items-center gap-1.5 my-1 px-3 py-1 rounded-lg bg-[#4FD1D9]/15 hover:bg-[#4FD1D9]/25 text-[#4FD1D9] light:text-[#0E7077] font-semibold text-xs transition-all border border-[#4FD1D9]/30 no-underline cursor-pointer shadow-xs" ${!isInternal ? 'target="_blank" rel="noopener noreferrer"' : ''}><span>${cleanLabel}</span><span class="text-[10px] opacity-75">→</span></a>`;
+    return `<a href="${cleanUrl}" data-link="${cleanUrl}" class="tutor-nav-btn inline-flex items-center gap-1.5 my-1 px-3.5 py-1.5 rounded-xl bg-[#4FD1D9]/15 hover:bg-[#4FD1D9]/25 text-[#4FD1D9] light:text-[#0E7077] font-semibold text-xs sm:text-sm transition-all border border-[#4FD1D9]/30 no-underline cursor-pointer shadow-xs" ${!isInternal ? 'target="_blank" rel="noopener noreferrer"' : ''}><span>${cleanLabel}</span><span class="text-[11px] opacity-75">→</span></a>`;
   });
 
   // 6. Lists
@@ -530,10 +574,10 @@ function formatMarkdown(raw: string): string {
       .split('\n')
       .map((line) => {
         const content = line.replace(/^[*-•]\s*/, '').trim();
-        return `<li class="flex items-start gap-2 text-xs leading-relaxed"><span class="text-[var(--signal-cyan)] leading-none mt-1 shrink-0">•</span><span>${content}</span></li>`;
+        return `<li class="flex items-start gap-2.5 text-xs sm:text-sm leading-relaxed"><span class="text-[var(--signal-cyan)] leading-none mt-1.5 shrink-0">•</span><span>${content}</span></li>`;
       })
       .join('');
-    return `<ul class="my-2 space-y-1.5 text-slate-200">${items}</ul>`;
+    return `<ul class="my-2.5 space-y-2 text-slate-200">${items}</ul>`;
   });
 
   // Transform ordered lists
@@ -543,10 +587,10 @@ function formatMarkdown(raw: string): string {
       .split('\n')
       .map((line, idx) => {
         const content = line.replace(/^\d+\.\s*/, '').trim();
-        return `<li class="flex items-start gap-2 text-xs leading-relaxed"><span class="font-mono text-[10px] text-[var(--cryostat-gold)] mt-0.5 shrink-0 font-bold">${idx + 1}.</span><span>${content}</span></li>`;
+        return `<li class="flex items-start gap-2.5 text-xs sm:text-sm leading-relaxed"><span class="font-mono text-xs text-[var(--cryostat-gold)] mt-0.5 shrink-0 font-bold">${idx + 1}.</span><span>${content}</span></li>`;
       })
       .join('');
-    return `<ol class="my-2 space-y-1.5 text-slate-200">${items}</ol>`;
+    return `<ol class="my-2.5 space-y-2 text-slate-200">${items}</ol>`;
   });
 
   // 7. Paragraphs
@@ -564,7 +608,7 @@ function formatMarkdown(raw: string): string {
       ) {
         return trimmed;
       }
-      return `<p class="mb-2 last:mb-0 leading-relaxed text-slate-200 text-xs">${trimmed.replace(/\n/g, '<br/>')}</p>`;
+      return `<p class="mb-2.5 last:mb-0 leading-relaxed text-slate-200 light:text-slate-800 text-xs sm:text-sm">${trimmed.replace(/\n/g, '<br/>')}</p>`;
     })
     .filter(Boolean)
     .join('\n');

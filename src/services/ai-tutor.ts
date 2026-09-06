@@ -48,6 +48,7 @@ Core Capabilities (when within domain):
      - Module 6 (Deutsch-Jozsa): [Module 6: Deutsch-Jozsa](/learn/deutsch-jozsa)
      - Problem Catalog: [Browse Problems](/problems)
      - User Profile: [View Profile](/profile)
+   - STRICT CURRICULUM LOCK ENFORCEMENT: Check the user's Curriculum Track & Module Lock Status in the context. You MUST ONLY provide openable markdown links to modules that are currently UNLOCKED for this learner! For modules that are currently LOCKED, do NOT provide a markdown link; instead explain that they will unlock once they complete the prerequisite module.
    - STRICT PROHIBITION: Never provide direct answers, hints, or solutions for specific problem challenges. You are strictly forbidden from assisting inside the evaluated problems section.
 
 Guidelines for Clean & Uncluttered Responses (CRITICAL):
@@ -106,6 +107,16 @@ function buildContextMessage(context: TutorContext): string {
 
   if (context.currentModule) {
     parts.push(`\n**Current Learning Module:** ${context.currentModule}`);
+  }
+
+  if (context.unlockedModules || context.lockedModules) {
+    parts.push('\n**Curriculum Track & Module Lock Status:**');
+    if (context.unlockedModules && context.unlockedModules.length > 0) {
+      parts.push(`- Unlocked & Accessible to User (ONLY provide links to these): ${context.unlockedModules.join(', ')}`);
+    }
+    if (context.lockedModules && context.lockedModules.length > 0) {
+      parts.push(`- Locked in Curriculum (DO NOT provide links to these; advise learner to complete prerequisites first): ${context.lockedModules.join(', ')}`);
+    }
   }
 
   return parts.length > 0 ? `\n\n---\nCONTEXT:\n${parts.join('\n')}` : '';

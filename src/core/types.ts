@@ -82,6 +82,9 @@ export interface TutorContext {
   simulationResult: SimulationResult | null;
   currentModule: string | null;
   currentChallenge: string | null;
+  completedModules?: string[];
+  unlockedModules?: string[];
+  lockedModules?: string[];
 }
 
 // --- Learning Modules & Course Tracks ---
