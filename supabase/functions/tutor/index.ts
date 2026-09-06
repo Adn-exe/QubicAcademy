@@ -90,9 +90,13 @@ serve(async (req) => {
       );
     }
 
-    // Authenticate user via Supabase Auth header
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
+    // Authenticate user or valid anon client
+    const authHeader = req.headers.get('Authorization') || '';
+    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+    const apiKeyHeader = (req.headers.get('apikey') || '').trim();
+    const rawToken = token || apiKeyHeader;
+
+    if (!rawToken) {
       return new Response(
         JSON.stringify({ error: 'Missing authorization token.' }),
         { status: 401, headers: { ...cors, 'Content-Type': 'application/json' } }
@@ -101,20 +105,46 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
+    // Decode JWT payload to check role
+    let payload: any = null;
+    try {
+      const parts = rawToken.split('.');
+      if (parts.length === 3) {
+        payload = JSON.parse(atob(parts[1]));
+      }
+    } catch {
+      // payload decoding failed
+    }
+
+    let rateLimitKey: string;
+
+    if (payload?.role === 'authenticated') {
+      // Authenticated user — verify session with Supabase Auth
+      const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: `Bearer ${rawToken}` } },
+      });
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (!userError && user) {
+        rateLimitKey = `user:${user.id}`;
+      } else {
+        // Fall back to client IP if user session is invalid/expired
+        const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'guest';
+        rateLimitKey = `ip:${clientIp}`;
+      }
+    } else if (payload?.role === 'anon' || rawToken === supabaseAnonKey) {
+      // Guest user authorized via Supabase project anon key
+      const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'guest';
+      rateLimitKey = `ip:${clientIp}`;
+    } else {
       return new Response(
-        JSON.stringify({ error: 'Unauthorized user.' }),
+        JSON.stringify({ error: 'Invalid authentication credentials.' }),
         { status: 401, headers: { ...cors, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Rate limit per user
-    if (isRateLimited(user.id)) {
+    // Rate limit per client
+    if (isRateLimited(rateLimitKey)) {
       return new Response(
         JSON.stringify({ error: 'Rate limit exceeded. Please slow down and try again in a moment.' }),
         { status: 429, headers: { ...cors, 'Content-Type': 'application/json', 'Retry-After': '60' } }
