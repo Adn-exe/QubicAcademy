@@ -299,19 +299,14 @@ export function LabPage() {
         {/* Right: Visualization Panel */}
         <div className="w-[340px] shrink-0 flex flex-col gap-3">
           {/* Bloch Spheres */}
-          <div className="glass-light rounded-xl overflow-hidden" style={{ minHeight: '180px' }}>
-            <div className="px-3 pt-3 pb-1">
-              <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Bloch Spheres
-              </h4>
-            </div>
+          <div className="glass-light rounded-xl overflow-hidden shrink-0 border border-white/10">
             <BlochSpherePanel
               blochVectors={simulationResult?.blochVectors ?? []}
             />
           </div>
 
           {/* Charts */}
-          <div className="flex-1 glass-light rounded-xl overflow-hidden">
+          <div className="flex-1 glass-light rounded-xl overflow-hidden min-h-[200px] border border-white/10">
             <VisualizationPanel
               result={simulationResult}
               numQubits={circuit.numQubits}

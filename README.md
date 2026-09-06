@@ -64,24 +64,30 @@ An enterprise-grade, interactive educational web application designed to teach q
   - Generates state amplitude tables with phase angles and probabilities.
 
 - **3D Bloch Sphere Visualization**:
-  - Interactive Three.js / React Three Fiber unit sphere.
-  - Real-time qubit state projection $(\theta, \phi)$ on Cartesian $X, Y, Z$ axes with smooth orbital controls.
+  - Interactive Three.js / React Three Fiber unit sphere with smooth 60fps orbital controls.
+  - Zero-lag synchronous mounting with `@react-three/drei` 3D-anchored DOM labels (`|0⟩`, `|1⟩`, `X`, `Y`, `Z`), text glows, and real-time statevector tracking.
+  - Clamped container layout architecture preventing canvas ResizeObserver loops.
 
 - **Bidirectional Qiskit Python Code Editor**:
   - Embedded Monaco code editor with dynamic dark/light theme switching.
   - Automatic translation of visual circuit diagrams into modern Qiskit 1.0+ code with `AerSimulator` fallback.
   - Live reverse parser converting typed Python code into visual circuit gates.
 
-- **Comprehensive Structured Curriculum**:
+- **Comprehensive Structured Curriculum & Modern Study Navigator**:
   - 6 deep-dive chapters covering Superposition, Born Rule Measurement, Entanglement & Bell Pairs, Quantum Teleportation, Grover's Search Algorithm, and Deutsch-Jozsa.
   - Interactive custom visualizers embedded directly inside lessons.
+  - **Distraction-Free Reading Workspace**: Spacious `max-w-4xl` centered layout with zero permanent sidebar clutter.
+  - **Top-Bar Module Switcher Popover**: 1-click module switching from anywhere with real-time status indicators.
+  - **Slide-Over Study Drawer**: Glassmorphic overlay drawer featuring interactive Syllabus track accordions, Glossary terminology, and an auto-saving personal Notebook.
 
 - **LeetCode-Style Quantum Problems Catalog**:
   - 17 challenge problems spanning Beginner to Advanced tiers.
   - Integrated verification test runner evaluating gate requirements, circuit depth, and target statevector tolerances.
 
-- **Context-Aware AI Tutor (Google Gemini)**:
-  - Grounded quantum physics tutor capable of explaining states, analyzing circuits, and providing direct navigation links to platform modules.
+- **Context-Aware AI Tutor with 1-Tap Socratic Elaboration**:
+  - Grounded quantum physics tutor powered by Google Gemini and Supabase Edge Functions.
+  - **1-Tap Section Elaboration**: Single click sends contextual explanations tailored to the learner's completed modules level.
+  - **Socratic Understanding Checks**: Proactively asks diagnostic check questions to test comprehension and reinforce key quantum intuitions.
   - Strictly sandboxed away from problem evaluations to preserve academic integrity.
 
 - **User Profiles, Streaks & Cloud Persistence**:

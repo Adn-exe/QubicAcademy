@@ -3,8 +3,8 @@
 // React Three Fiber based, per-qubit Bloch sphere
 // ============================================================
 
-import { useState, useRef, useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { useState, useMemo } from 'react';
+import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Html, Line } from '@react-three/drei';
 import * as THREE from 'three';
 import { Compass } from 'lucide-react';
@@ -60,23 +60,26 @@ export function BlochSpherePanel({ blochVectors }: BlochSphereProps) {
       </div>
 
       {/* Main 3D Sphere Canvas */}
-      <div className="flex-1 w-full relative rounded-xl overflow-hidden border border-[#4FD1D9]/20 light:border-slate-200 bg-[#0A0E1A] light:bg-slate-50 min-h-[160px]">
-        <Canvas
-          camera={{ position: [2.2, 1.8, 2.2], fov: 40 }}
-          gl={{ antialias: true, alpha: true }}
-        >
-          <ambientLight intensity={0.7} />
-          <pointLight position={[5, 5, 5]} intensity={0.8} />
-          <BlochSphere3D vector={activeVec} />
-          <OrbitControls
-            enableZoom={false}
-            enablePan={false}
-            rotateSpeed={0.6}
-          />
-        </Canvas>
+      <div className="w-full h-[190px] relative rounded-xl overflow-hidden border border-[#4FD1D9]/20 light:border-slate-200 bg-[#0A0E1A] light:bg-slate-50 shrink-0">
+        <div className="absolute inset-0">
+          <Canvas
+            camera={{ position: [2.2, 1.8, 2.2], fov: 40 }}
+            gl={{ antialias: true, alpha: true }}
+            style={{ width: '100%', height: '100%', display: 'block' }}
+          >
+            <ambientLight intensity={0.7} />
+            <pointLight position={[5, 5, 5]} intensity={0.8} />
+            <BlochSphere3D vector={activeVec} />
+            <OrbitControls
+              enableZoom={false}
+              enablePan={false}
+              rotateSpeed={0.6}
+            />
+          </Canvas>
+        </div>
 
         {/* Floating coordinates badge */}
-        <div className="absolute bottom-1.5 left-2 right-2 flex items-center justify-between text-[10px] font-mono text-slate-400 light:text-slate-600 bg-black/60 light:bg-white/80 backdrop-blur-xs px-2 py-1 rounded-md border border-white/10 light:border-slate-200 pointer-events-none">
+        <div className="absolute bottom-1.5 left-2 right-2 flex items-center justify-between text-[10px] font-mono text-slate-400 light:text-slate-600 bg-black/60 light:bg-white/80 backdrop-blur-xs px-2 py-1 rounded-md border border-white/10 light:border-slate-200 pointer-events-none z-10">
           <span>q{activeIndex} Vector</span>
           <span className="text-[#4FD1D9] light:text-[#0D9488] font-bold">
             [{activeVec.x.toFixed(2)}, {activeVec.y.toFixed(2)}, {activeVec.z.toFixed(2)}]
@@ -88,17 +91,6 @@ export function BlochSpherePanel({ blochVectors }: BlochSphereProps) {
 }
 
 function BlochSphere3D({ vector }: { vector: BlochVector }) {
-  const arrowRef = useRef<THREE.Group>(null);
-  const targetVec = useMemo(() => new THREE.Vector3(vector.x, vector.z, vector.y), [vector]);
-
-  // Animate the state vector
-  useFrame(() => {
-    if (arrowRef.current) {
-      const current = arrowRef.current.position;
-      current.lerp(targetVec, 0.1);
-    }
-  });
-
   // Axis lines — render in --signal-cyan
   const axes = useMemo(() => [
     { from: [-1.3, 0, 0] as [number, number, number], to: [1.3, 0, 0] as [number, number, number], label: 'X', color: '#4FD1D9' },
@@ -161,7 +153,7 @@ function BlochSphere3D({ vector }: { vector: BlochVector }) {
       </Html>
 
       {/* State vector arrow in --cryostat-gold (#D9A441) */}
-      <group ref={arrowRef} position={[0, 0, 0]}>
+      <group position={[0, 0, 0]}>
         <Line
           points={[[0, 0, 0], [vector.x, vector.z, vector.y]]}
           color="#D9A441"
@@ -169,7 +161,7 @@ function BlochSphere3D({ vector }: { vector: BlochVector }) {
         />
         {/* Arrow tip in --cryostat-gold */}
         <mesh position={[vector.x, vector.z, vector.y]}>
-          <sphereGeometry args={[0.07, 16, 16]} />
+          <sphereGeometry args={[0.075, 16, 16]} />
           <meshBasicMaterial color="#D9A441" />
         </mesh>
       </group>
