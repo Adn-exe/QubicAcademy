@@ -10,10 +10,7 @@
 // Grounded in tokens: --signal-cyan (#4FD1D9), --cryostat-gold (#D9A441), --panel (#12172A)
 // ============================================================
 
-import { useState, useMemo, Suspense } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Text, Line } from '@react-three/drei';
-import * as THREE from 'three';
+import { useState, useMemo } from 'react';
 import { Bot, ExternalLink, RotateCcw, Link2, Eye, Compass, Waves } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useChatStore } from '../../core/store';
@@ -140,28 +137,17 @@ export function LessonVisualizer({ moduleId, onOpenInBuilder }: LessonVisualizer
     return (
       <div className="w-full my-6 space-y-6 animate-fade-in">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-          {/* 3D Bloch Sphere Canvas */}
+          {/* 3D Bloch Sphere Canvas + High-Failsafe SVG Fallback */}
           <div className="md:col-span-7 h-[360px] relative flex items-center justify-center rounded-2xl bg-[#0A0E1A] border border-white/10 overflow-hidden">
-            <Canvas
-              camera={{ position: [2.3, 1.8, 2.3], fov: 42 }}
-              gl={{ antialias: true, alpha: true }}
-              className="cursor-grab active:cursor-grabbing"
-            >
-              <Suspense fallback={null}>
-                <ambientLight intensity={0.8} />
-                <pointLight position={[6, 6, 6]} intensity={1.0} />
-                <BlochSphereMesh vector={blochVec} />
-                <OrbitControls enableZoom={false} enablePan={false} rotateSpeed={0.5} />
-              </Suspense>
-            </Canvas>
+            <BlochSphereSVGFallback vector={blochVec} />
 
             {/* State vector coordinate badge */}
-            <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-lg bg-[#12172A]/85 border border-white/10 text-[11px] font-mono text-slate-300 pointer-events-none shadow-md">
+            <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-lg bg-[#12172A]/85 border border-white/10 text-[11px] font-mono text-slate-300 pointer-events-none shadow-md z-10">
               |ψ⟩ = [{blochVec.x.toFixed(2)}, {blochVec.y.toFixed(2)}, {blochVec.z.toFixed(2)}]
             </div>
 
-            <div className="absolute top-3 right-3 px-2.5 py-1 rounded bg-white/5 border border-white/10 text-[10px] font-mono text-[#4FD1D9]">
-              DRAG TO ROTATE 3D SPHERE
+            <div className="absolute top-3 right-3 px-2.5 py-1 rounded bg-white/5 border border-white/10 text-[10px] font-mono text-[#4FD1D9] z-10">
+              INTERACTIVE BLOCH SPHERE
             </div>
           </div>
 
@@ -834,57 +820,48 @@ export function LessonVisualizer({ moduleId, onOpenInBuilder }: LessonVisualizer
   );
 }
 
-// 3D Bloch Sphere Mesh (for Module 1)
-function BlochSphereMesh({ vector }: { vector: { x: number; y: number; z: number } }) {
-  const axes = useMemo(
-    () => [
-      { from: [-1.3, 0, 0] as [number, number, number], to: [1.3, 0, 0] as [number, number, number], label: 'X', color: '#4FD1D9' },
-      { from: [0, -1.3, 0] as [number, number, number], to: [0, 1.3, 0] as [number, number, number], label: 'Z', color: '#4FD1D9' },
-      { from: [0, 0, -1.3] as [number, number, number], to: [0, 0, 1.3] as [number, number, number], label: 'Y', color: '#4FD1D9' },
-    ],
-    []
-  );
+
+
+// Ultra-failsafe vector SVG Bloch Sphere renderer
+export function BlochSphereSVGFallback({ vector }: { vector: { x: number; y: number; z: number } }) {
+  const cx = 180;
+  const cy = 150;
+  const R = 105;
+
+  // Orthographic 2.5D projection: (x, y, z) mapped to SVG canvas coordinates
+  const px = cx + R * (vector.x * 0.707 - vector.y * 0.707);
+  const py = cy - R * (vector.z * 0.82 - (vector.x + vector.y) * 0.22);
 
   return (
-    <group>
-      <mesh>
-        <sphereGeometry args={[1, 24, 24]} />
-        <meshBasicMaterial color="#4FD1D9" wireframe transparent opacity={0.15} />
-      </mesh>
+    <div className="w-full h-full flex flex-col items-center justify-center relative p-2 bg-[#0A0E1A] rounded-2xl select-none">
+      <svg viewBox="0 0 360 300" className="w-full h-full max-h-[320px] drop-shadow-xl">
+        {/* Outer Sphere outline */}
+        <circle cx={cx} cy={cy} r={R} fill="#12172A" stroke="#4FD1D9" strokeWidth="1.5" strokeOpacity="0.3" />
 
-      <mesh>
-        <sphereGeometry args={[0.99, 32, 32]} />
-        <meshPhongMaterial color="#12172A" transparent opacity={0.35} side={THREE.DoubleSide} />
-      </mesh>
+        {/* Latitude Equator Ellipse */}
+        <ellipse cx={cx} cy={cy} rx={R} ry={R * 0.35} fill="none" stroke="#4FD1D9" strokeWidth="1.5" strokeDasharray="3 3" strokeOpacity="0.45" />
 
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.98, 1, 64]} />
-        <meshBasicMaterial color="#4FD1D9" transparent opacity={0.25} side={THREE.DoubleSide} />
-      </mesh>
+        {/* Longitude Guide Ellipse */}
+        <ellipse cx={cx} cy={cy} rx={R * 0.35} ry={R} fill="none" stroke="#4FD1D9" strokeWidth="1" strokeDasharray="3 3" strokeOpacity="0.25" />
 
-      {axes.map((axis) => (
-        <group key={axis.label}>
-          <Line points={[axis.from, axis.to]} color={axis.color} lineWidth={1} transparent opacity={0.4} />
-          <Text position={axis.to} fontSize={0.14} color={axis.color} anchorX="center" anchorY="middle">
-            {axis.label}
-          </Text>
-        </group>
-      ))}
+        {/* Z Axis (North / South Pole) */}
+        <line x1={cx} y1={cy - R - 14} x2={cx} y2={cy + R + 14} stroke="#4FD1D9" strokeWidth="1.5" strokeOpacity="0.6" />
+        <text x={cx} y={cy - R - 20} textAnchor="middle" fill="#4FD1D9" fontSize="13" fontWeight="bold" fontFamily="monospace">|0⟩ (North)</text>
+        <text x={cx} y={cy + R + 28} textAnchor="middle" fill="#D9A441" fontSize="13" fontWeight="bold" fontFamily="monospace">|1⟩ (South)</text>
 
-      <Text position={[0, 1.18, 0]} fontSize={0.14} color="#4FD1D9">
-        |0⟩
-      </Text>
-      <Text position={[0, -1.18, 0]} fontSize={0.14} color="#D9A441">
-        |1⟩
-      </Text>
+        {/* X Axis */}
+        <line x1={cx - R * 0.707} y1={cy + R * 0.25} x2={cx + R * 0.707} y2={cy - R * 0.25} stroke="#4FD1D9" strokeWidth="1.5" strokeOpacity="0.5" />
+        <text x={cx + R * 0.707 + 10} y={cy - R * 0.25 + 4} fill="#4FD1D9" fontSize="11" fontFamily="monospace">X</text>
 
-      <group>
-        <Line points={[[0, 0, 0], [vector.x, vector.z, vector.y]]} color="#D9A441" lineWidth={3.5} />
-        <mesh position={[vector.x, vector.z, vector.y]}>
-          <sphereGeometry args={[0.075, 16, 16]} />
-          <meshBasicMaterial color="#D9A441" />
-        </mesh>
-      </group>
-    </group>
+        {/* Y Axis */}
+        <line x1={cx - R * 0.707} y1={cy - R * 0.25} x2={cx + R * 0.707} y2={cy + R * 0.25} stroke="#4FD1D9" strokeWidth="1.5" strokeOpacity="0.5" />
+        <text x={cx + R * 0.707 + 10} y={cy + R * 0.25 + 4} fill="#4FD1D9" fontSize="11" fontFamily="monospace">Y</text>
+
+        {/* State Vector Ray (Golden Ray to Tip) */}
+        <line x1={cx} y1={cy} x2={px} y2={py} stroke="#D9A441" strokeWidth="3.5" strokeLinecap="round" />
+        <circle cx={px} cy={py} r="6.5" fill="#D9A441" />
+        <circle cx={px} cy={py} r="11" fill="#D9A441" fillOpacity="0.25" />
+      </svg>
+    </div>
   );
 }
