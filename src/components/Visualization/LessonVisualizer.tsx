@@ -10,9 +10,12 @@
 // Grounded in tokens: --signal-cyan (#4FD1D9), --cryostat-gold (#D9A441), --panel (#12172A)
 // ============================================================
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Suspense } from 'react';
 import { Bot, ExternalLink, RotateCcw, Link2, Eye, Compass, Waves } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls, Text, Line } from '@react-three/drei';
+import * as THREE from 'three';
 import { useChatStore } from '../../core/store';
 import { MeasurementVisualizer } from './MeasurementVisualizer';
 import { TeleportationVisualizer } from './TeleportationVisualizer';
@@ -137,17 +140,41 @@ export function LessonVisualizer({ moduleId, onOpenInBuilder }: LessonVisualizer
     return (
       <div className="w-full my-6 space-y-6 animate-fade-in">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-          {/* 3D Bloch Sphere Canvas + High-Failsafe SVG Fallback */}
-          <div className="md:col-span-7 h-[360px] relative flex items-center justify-center rounded-2xl bg-[#0A0E1A] border border-white/10 overflow-hidden">
-            <BlochSphereSVGFallback vector={blochVec} />
+          {/* 3D WebGL Bloch Sphere Canvas with OrbitControls */}
+          <div className="md:col-span-7 h-[360px] w-full relative flex items-center justify-center rounded-2xl bg-[#0A0E1A] border border-white/10 overflow-hidden shadow-2xl">
+            <Suspense
+              fallback={
+                <div className="flex flex-col items-center justify-center text-slate-500 text-xs">
+                  <Compass size={24} className="text-[#4FD1D9] animate-spin mb-2" />
+                  <span>Rendering 3D Bloch Sphere...</span>
+                </div>
+              }
+            >
+              <Canvas
+                style={{ width: '100%', height: '100%', display: 'block' }}
+                camera={{ position: [2.3, 1.8, 2.3], fov: 42 }}
+                gl={{ antialias: true, alpha: true }}
+              >
+                <ambientLight intensity={0.65} />
+                <pointLight position={[5, 5, 5]} intensity={0.9} />
+                <pointLight position={[-4, -4, -4]} intensity={0.3} />
+                <BlochSphere3DView vector={blochVec} />
+                <OrbitControls enableZoom={false} enablePan={false} rotateSpeed={0.7} />
+              </Canvas>
+            </Suspense>
 
             {/* State vector coordinate badge */}
-            <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-lg bg-[#12172A]/85 border border-white/10 text-[11px] font-mono text-slate-300 pointer-events-none shadow-md z-10">
+            <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-lg bg-[#12172A]/85 backdrop-blur-md border border-white/10 text-[11px] font-mono text-slate-300 pointer-events-none shadow-md z-10">
               |ψ⟩ = [{blochVec.x.toFixed(2)}, {blochVec.y.toFixed(2)}, {blochVec.z.toFixed(2)}]
             </div>
 
-            <div className="absolute top-3 right-3 px-2.5 py-1 rounded bg-white/5 border border-white/10 text-[10px] font-mono text-[#4FD1D9] z-10">
-              INTERACTIVE BLOCH SPHERE
+            <div className="absolute top-3 right-3 px-2.5 py-1 rounded bg-white/5 border border-white/10 text-[10px] font-mono text-[#4FD1D9] z-10 flex items-center gap-1.5 pointer-events-none">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#4FD1D9] animate-pulse" />
+              3D BLOCH SPHERE (WebGL)
+            </div>
+
+            <div className="absolute bottom-3 right-3 text-[10px] font-mono text-slate-400/80 bg-black/40 px-2 py-0.5 rounded pointer-events-none z-10">
+              Drag to rotate in 3D
             </div>
           </div>
 
@@ -821,6 +848,67 @@ export function LessonVisualizer({ moduleId, onOpenInBuilder }: LessonVisualizer
 }
 
 
+
+// 3D Bloch Sphere Mesh (WebGL / Three.js)
+function BlochSphere3DView({ vector }: { vector: { x: number; y: number; z: number } }) {
+  const axes = useMemo(
+    () => [
+      { from: [-1.35, 0, 0] as [number, number, number], to: [1.35, 0, 0] as [number, number, number], label: 'X', color: '#4FD1D9' },
+      { from: [0, -1.35, 0] as [number, number, number], to: [0, 1.35, 0] as [number, number, number], label: 'Z', color: '#4FD1D9' },
+      { from: [0, 0, -1.35] as [number, number, number], to: [0, 0, 1.35] as [number, number, number], label: 'Y', color: '#4FD1D9' },
+    ],
+    []
+  );
+
+  return (
+    <group>
+      {/* Wireframe outer sphere */}
+      <mesh>
+        <sphereGeometry args={[1, 28, 28]} />
+        <meshBasicMaterial color="#4FD1D9" wireframe transparent opacity={0.15} />
+      </mesh>
+
+      {/* Semi-transparent inner sphere surface */}
+      <mesh>
+        <sphereGeometry args={[0.99, 32, 32]} />
+        <meshPhongMaterial color="#12172A" transparent opacity={0.4} side={THREE.DoubleSide} />
+      </mesh>
+
+      {/* Equator circle ring */}
+      <mesh rotation={[Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.98, 1, 64]} />
+        <meshBasicMaterial color="#4FD1D9" transparent opacity={0.25} side={THREE.DoubleSide} />
+      </mesh>
+
+      {/* Axes and text labels */}
+      {axes.map((axis) => (
+        <group key={axis.label}>
+          <Line points={[axis.from, axis.to]} color={axis.color} lineWidth={1.2} transparent opacity={0.4} />
+          <Text position={axis.to} fontSize={0.14} color={axis.color} anchorX="center" anchorY="middle">
+            {axis.label}
+          </Text>
+        </group>
+      ))}
+
+      {/* |0⟩ North and |1⟩ South labels */}
+      <Text position={[0, 1.22, 0]} fontSize={0.15} color="#4FD1D9">
+        |0⟩
+      </Text>
+      <Text position={[0, -1.22, 0]} fontSize={0.15} color="#D9A441">
+        |1⟩
+      </Text>
+
+      {/* Golden State Vector Arrow & Tip */}
+      <group>
+        <Line points={[[0, 0, 0], [vector.x, vector.z, vector.y]]} color="#D9A441" lineWidth={3.8} />
+        <mesh position={[vector.x, vector.z, vector.y]}>
+          <sphereGeometry args={[0.075, 16, 16]} />
+          <meshBasicMaterial color="#D9A441" />
+        </mesh>
+      </group>
+    </group>
+  );
+}
 
 // Ultra-failsafe vector SVG Bloch Sphere renderer
 export function BlochSphereSVGFallback({ vector }: { vector: { x: number; y: number; z: number } }) {

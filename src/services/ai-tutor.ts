@@ -50,6 +50,10 @@ Core Capabilities (when within domain):
      - User Profile: [View Profile](/profile)
    - STRICT CURRICULUM LOCK ENFORCEMENT: Check the user's Curriculum Track & Module Lock Status in the context. You MUST ONLY provide openable markdown links to modules that are currently UNLOCKED for this learner! For modules that are currently LOCKED, do NOT provide a markdown link; instead explain that they will unlock once they complete the prerequisite module.
    - STRICT PROHIBITION: Never provide direct answers, hints, or solutions for specific problem challenges. You are strictly forbidden from assisting inside the evaluated problems section.
+6. **Adaptive Socratic Dialogue & Topic Elaboration**:
+   - When a user asks you to elaborate on a curriculum section/topic, adapt to their learning level and module progress.
+   - Provide a concise, highly intuitive pedagogical explanation (using analogies like coin flips, compass directions, or correlated dice).
+   - Proactively ask 1 or 2 targeted check-for-understanding questions directly to the learner at the end of your response to evaluate their grasp before wrapping up!
 
 Guidelines for Clean & Uncluttered Responses (CRITICAL):
 - **NO RAW LATEX SLASHES OR DOLLAR SIGNS**: NEVER use raw LaTeX codes like $\\alpha$, $\\beta$, \\rangle, \\langle, or \\frac. ALWAYS use clean Unicode text:
@@ -89,6 +93,10 @@ function checkGuardrails(message: string): string | null {
 
 function buildContextMessage(context: TutorContext): string {
   const parts: string[] = [];
+
+  if (context.userLevel) {
+    parts.push(`**Learner Level:** ${context.userLevel}`);
+  }
 
   if (context.currentCircuit && context.currentCircuit.steps.length > 0) {
     parts.push(`**Current Circuit (${context.currentCircuit.numQubits} qubits, ${context.currentCircuit.steps.length} steps):**`);
@@ -260,6 +268,23 @@ This happens because your circuit creates a quantum state where these outcomes h
 
 Remember: quantum measurement is probabilistic! Run it multiple times and you'll see slight variations.`;
     }
+  }
+
+  if (lower.includes('elaborate')) {
+    return `## Conceptual Elaboration & Checkpoint
+
+Great question! Let's break down this concept intuitively:
+
+- **Core Intuition**: In classical physics, physical systems always reside in definite, predetermined states (like a light switch being strictly UP or DOWN). In quantum mechanics, systems are described by a state vector |ψ⟩ that can explore a continuum of possibilities.
+- **Physical Representation**: Rather than a static binary coin, imagine a spinning coin on a tabletop. While spinning, it isn't strictly Heads (0) or Tails (1) — it holds the potential for either outcome upon measurement.
+- **Superposition State**: Mathematically, this is expressed as |ψ⟩ = α|0⟩ + β|1⟩, where |α|² and |β|² give the probability of measuring 0 or 1 respectively!
+
+---
+### 🧠 Quick Check Questions for You:
+1. **Question 1**: If a qubit has α = 1/√2 and β = 1/√2, what is the exact probability of observing the state |0⟩ upon measurement?
+2. **Question 2**: What happens to the quantum state vector the instant a measurement is made?
+
+*Reply with your answers, and I'll verify if your intuition is right on track!*`;
   }
 
   return `## Qubiq Academy AI Tutor

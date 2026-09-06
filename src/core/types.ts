@@ -85,6 +85,7 @@ export interface TutorContext {
   completedModules?: string[];
   unlockedModules?: string[];
   lockedModules?: string[];
+  userLevel?: string;
 }
 
 // --- Learning Modules & Course Tracks ---

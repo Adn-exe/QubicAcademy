@@ -159,11 +159,13 @@ interface ChatState {
   messages: ChatMessage[];
   isLoading: boolean;
   isTutorOpen: boolean;
+  pendingPrompt: string | null;
 
   addMessage: (message: ChatMessage) => void;
   setLoading: (loading: boolean) => void;
   toggleTutor: () => void;
   setTutorOpen: (open: boolean) => void;
+  setPendingPrompt: (prompt: string | null) => void;
   clearChat: () => void;
 }
 
@@ -171,6 +173,7 @@ export const useChatStore = create<ChatState>((set) => ({
   messages: [],
   isLoading: false,
   isTutorOpen: false,
+  pendingPrompt: null,
 
   addMessage: (message) => set((state) => ({
     messages: [...state.messages, message],
@@ -179,6 +182,7 @@ export const useChatStore = create<ChatState>((set) => ({
   setLoading: (loading) => set({ isLoading: loading }),
   toggleTutor: () => set((state) => ({ isTutorOpen: !state.isTutorOpen })),
   setTutorOpen: (open) => set({ isTutorOpen: open }),
+  setPendingPrompt: (prompt) => set({ pendingPrompt: prompt }),
   clearChat: () => set({ messages: [] }),
 }));
 

@@ -73,8 +73,6 @@ export function ModulePage() {
   const circuit = useCircuitStore((s) => s.circuit);
   const runSimulation = useCircuitStore((s) => s.runSimulation);
 
-  // AI Tutor store
-  const toggleTutor = useChatStore((s) => s.toggleTutor);
 
   // Active module & track
   const currentModule = allModules.find((m) => m.id === moduleId) || allModules[0];
@@ -91,13 +89,37 @@ export function ModulePage() {
   // Sidebar Tab: 'syllabus' | 'glossary' | 'notes' (Study Navigator)
   const [sidebarTab, setSidebarTab] = useState<'syllabus' | 'glossary' | 'notes'>('syllabus');
 
-  // Auto-populate circuit sandbox when module changes
+  // Auto-populate circuit sandbox when module changes & execute initial simulation
   useEffect(() => {
     const secWithCircuit = currentModule.sections.find((s) => s.preloadedCircuit);
     if (secWithCircuit?.preloadedCircuit) {
       loadCircuit(secWithCircuit.preloadedCircuit);
+      setTimeout(() => runSimulation(), 50);
     }
-  }, [currentModule.id, loadCircuit]);
+  }, [currentModule.id, loadCircuit, runSimulation]);
+
+  // 1-Tap "Ask AI Tutor to elaborate on this topic" handler
+  const handleAskTutorAboutSection = (sectionTitle: string) => {
+    const completedCount = progress.completedModules.length;
+    const userLevel =
+      completedCount === 0
+        ? 'Beginner (Starting journey in quantum computing)'
+        : completedCount <= 2
+        ? 'Foundational Learner (Familiar with single-qubit states and measurement)'
+        : completedCount <= 4
+        ? 'Intermediate Apprentice (Familiar with entanglement and Bell states)'
+        : 'Advanced Quantum Explorer';
+
+    const prompt = `Can you elaborate on the topic "${sectionTitle}" from the "${currentModule.title}" module?
+
+Please calibrate to my current learning level: **${userLevel}** (${completedCount} module${completedCount === 1 ? '' : 's'} completed).
+1. Explain the intuitive core idea simply and cleanly (no raw LaTeX slashes or math walls).
+2. Proactively ask me 1 or 2 quick diagnostic check questions to test my understanding before wrapping up!`;
+
+    useChatStore.getState().setPendingPrompt(prompt);
+    useChatStore.getState().setTutorOpen(true);
+    window.dispatchEvent(new CustomEvent('quantum_ask_tutor', { detail: { prompt } }));
+  };
 
   // Reference to lesson content container to reset scroll position on module change
   const contentRef = useRef<HTMLElement>(null);
@@ -508,10 +530,11 @@ export function ModulePage() {
                   {/* Inline "Ask AI Tutor" about this section */}
                   <div className="flex justify-end pt-1">
                     <button
-                      onClick={toggleTutor}
-                      className="inline-flex items-center gap-1.5 text-xs opacity-70 hover:opacity-100 hover:text-[#D9A441] font-medium transition-all"
+                      type="button"
+                      onClick={() => handleAskTutorAboutSection(section.title)}
+                      className="inline-flex items-center gap-1.5 text-xs opacity-75 hover:opacity-100 hover:text-[#D9A441] font-medium transition-all cursor-pointer group"
                     >
-                      <Bot size={12} className="text-[#D9A441]" />
+                      <Bot size={13} className="text-[#D9A441] group-hover:scale-110 transition-transform" />
                       <span>Ask AI Tutor to elaborate on this concept →</span>
                     </button>
                   </div>

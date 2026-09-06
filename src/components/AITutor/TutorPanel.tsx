@@ -30,11 +30,32 @@ export function TutorPanel() {
   const isTutorOpen = useChatStore((s) => s.isTutorOpen);
   const toggleTutor = useChatStore((s) => s.toggleTutor);
   const clearChat = useChatStore((s) => s.clearChat);
+  const pendingPrompt = useChatStore((s) => s.pendingPrompt);
+  const setPendingPrompt = useChatStore((s) => s.setPendingPrompt);
 
   const circuit = useCircuitStore((s) => s.circuit);
   const simulationResult = useCircuitStore((s) => s.simulationResult);
   const loadCircuit = useCircuitStore((s) => s.loadCircuit);
   const completedModules = useProgressStore((s) => s.progress.completedModules);
+
+  // Derive current module context from route
+  const currentModuleTitle = useMemo(() => {
+    if (location.pathname.startsWith('/learn/')) {
+      const slug = location.pathname.replace('/learn/', '').split('/')[0];
+      const found = allModules.find((m) => m.id === slug);
+      return found ? found.title : slug;
+    }
+    return null;
+  }, [location.pathname]);
+
+  // Derive learner level from completed modules
+  const userLevel = useMemo(() => {
+    const count = completedModules.length;
+    if (count === 0) return 'Beginner (Starting journey in quantum computing)';
+    if (count <= 2) return 'Foundational Learner (Familiar with single-qubit states and measurement)';
+    if (count <= 4) return 'Intermediate Apprentice (Familiar with multi-qubit entanglement and Bell states)';
+    return 'Advanced Quantum Explorer';
+  }, [completedModules.length]);
 
   // Compute curriculum module lock status dynamically based on learner's completed modules
   const { lockedModuleSlugs, unlockedList, lockedList } = useMemo(() => {
@@ -43,12 +64,12 @@ export function TutorPanel() {
     const lList: string[] = [];
 
     allModules.forEach((m) => {
-      const isUnlocked = m.prerequisites.every((req) => completedModules.includes(req));
-      if (isUnlocked) {
-        uList.push(`${m.title} (/learn/${m.id})`);
-      } else {
+      const isLocked = m.prerequisites.some((prereqId) => !completedModules.includes(prereqId));
+      if (isLocked) {
         locked.add(m.id);
-        lList.push(`${m.title} (/learn/${m.id})`);
+        lList.push(m.title);
+      } else {
+        uList.push(m.title);
       }
     });
 
@@ -120,11 +141,12 @@ export function TutorPanel() {
       const context: TutorContext = {
         currentCircuit: circuit,
         simulationResult: simulationResult,
-        currentModule: null,
+        currentModule: currentModuleTitle,
         currentChallenge: null,
         completedModules,
         unlockedModules: unlockedList,
         lockedModules: lockedList,
+        userLevel,
       };
 
       const reply = await sendTutorMessage(text, context);
@@ -147,7 +169,35 @@ export function TutorPanel() {
     } finally {
       setLoading(false);
     }
-  }, [input, isLoading, circuit, simulationResult, completedModules, unlockedList, lockedList, addMessage, setLoading]);
+  }, [input, isLoading, circuit, simulationResult, currentModuleTitle, completedModules, unlockedList, lockedList, userLevel, addMessage, setLoading]);
+
+  // 1-Tap auto-trigger: when a pending prompt is scheduled via curriculum or button
+  useEffect(() => {
+    if (pendingPrompt && isTutorOpen && !isLoading) {
+      const p = pendingPrompt;
+      setPendingPrompt(null);
+      // Small tick to ensure UI state renders before async invocation
+      setTimeout(() => {
+        handleSend(p);
+      }, 50);
+    }
+  }, [pendingPrompt, isTutorOpen, isLoading, setPendingPrompt, handleSend]);
+
+  // Listen for 1-tap "Ask AI Tutor to elaborate" requests
+  useEffect(() => {
+    const handleAskTutorEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<{ prompt: string }>;
+      if (customEvent.detail?.prompt) {
+        useChatStore.getState().setTutorOpen(true);
+        // Small delay to ensure panel opens and state settles
+        setTimeout(() => {
+          handleSend(customEvent.detail.prompt);
+        }, 150);
+      }
+    };
+    window.addEventListener('quantum_ask_tutor', handleAskTutorEvent);
+    return () => window.removeEventListener('quantum_ask_tutor', handleAskTutorEvent);
+  }, [handleSend]);
 
   const handleLoadCircuit = (jsonStr: string) => {
     try {
