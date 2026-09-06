@@ -69,9 +69,15 @@ An enterprise-grade, interactive educational web application designed to teach q
   - Clamped container layout architecture preventing canvas ResizeObserver loops.
 
 - **Bidirectional Qiskit Python Code Editor**:
-  - Embedded Monaco code editor with dynamic dark/light theme switching.
+  - Embedded Monaco code editor with dynamic dark/light theme switching and syntax highlighting.
   - Automatic translation of visual circuit diagrams into modern Qiskit 1.0+ code with `AerSimulator` fallback.
   - Live reverse parser converting typed Python code into visual circuit gates.
+  - **Resilient Dual-Engine Architecture**: High-speed native editor fallback with Tab indentation support and auto-fallback safety net if Monaco CDN is slow or offline.
+  - **Quantum Orbital Loading State**: Futuristic animated quantum loading indicator with one-tap instant fast editor switch.
+
+- **Workspace Visualization & Circuit Telemetry**:
+  - Real-time measurement probability histograms and complex state amplitude distributions.
+  - Streamlined, non-cluttered header navigation with compact circuit metrics chips (Circuit Depth, Gate Count, and State Count).
 
 - **Comprehensive Structured Curriculum & Modern Study Navigator**:
   - 6 deep-dive chapters covering Superposition, Born Rule Measurement, Entanglement & Bell Pairs, Quantum Teleportation, Grover's Search Algorithm, and Deutsch-Jozsa.

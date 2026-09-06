@@ -186,42 +186,41 @@ export function VisualizationPanel({ result, numQubits }: VisualizationPanelProp
   return (
     <div className="h-full flex flex-col p-2.5 bg-[#12172A] light:bg-white text-slate-200 light:text-slate-800 transition-colors">
       {/* Top Navigation & Stats Bar */}
-      <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10 light:border-slate-200 shrink-0">
-        <div className="flex items-center gap-1 bg-[#0A0E1A] light:bg-slate-100 p-0.5 rounded-lg border border-white/10 light:border-slate-200">
+      <div className="flex items-center justify-between gap-1 pb-2 mb-2 border-b border-white/10 light:border-slate-200 shrink-0">
+        {/* Streamlined Tabs */}
+        <div className="flex items-center gap-0.5 bg-[#0A0E1A] light:bg-slate-100 p-0.5 rounded-lg border border-white/10 light:border-slate-200">
           <button
             onClick={() => setActiveTab('histogram')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all ${
               activeTab === 'histogram'
                 ? 'bg-[#4FD1D9] text-[#0A0E1A] shadow-xs'
                 : 'text-slate-400 light:text-slate-600 hover:text-white light:hover:text-black'
             }`}
           >
-            <BarChart3 size={13} />
+            <BarChart3 size={12} />
             <span>Histogram</span>
           </button>
           <button
             onClick={() => setActiveTab('statevector')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all ${
               activeTab === 'statevector'
                 ? 'bg-[#4FD1D9] text-[#0A0E1A] shadow-xs'
                 : 'text-slate-400 light:text-slate-600 hover:text-white light:hover:text-black'
             }`}
           >
-            <Atom size={13} />
-            <span>State Amplitudes</span>
+            <Atom size={12} />
+            <span>Amplitudes</span>
           </button>
         </div>
 
-        {/* Quick stats pills */}
-        <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-mono">
-          <span className="px-2 py-0.5 rounded bg-white/[0.04] light:bg-slate-100 border border-white/10 light:border-slate-200 text-[#4FD1D9] light:text-[#0D9488]">
-            Depth: {result.circuitDepth}
+        {/* Compact Circuit Metrics Chip */}
+        <div className="flex items-center gap-1.5 text-[11px] font-mono px-2 py-1 rounded-lg bg-[#0A0E1A] light:bg-slate-100 border border-white/10 light:border-slate-200 select-none">
+          <span className="text-[#4FD1D9] light:text-[#0D9488] font-medium" title="Circuit Depth">
+            D:{result.circuitDepth}
           </span>
-          <span className="px-2 py-0.5 rounded bg-white/[0.04] light:bg-slate-100 border border-white/10 light:border-slate-200 text-[#D9A441]">
-            Gates: {result.gateCount}
-          </span>
-          <span className="px-2 py-0.5 rounded bg-white/[0.04] light:bg-slate-100 border border-white/10 light:border-slate-200 text-slate-300 light:text-slate-700">
-            {1 << numQubits} states
+          <span className="text-white/20 light:text-slate-400">/</span>
+          <span className="text-[#D9A441] font-medium" title="Gate Count">
+            G:{result.gateCount}
           </span>
         </div>
       </div>
