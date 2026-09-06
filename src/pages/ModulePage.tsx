@@ -584,54 +584,44 @@ Please calibrate to my current learning level: **${userLevel}** (${completedCoun
                   <span>{currentModule.estimatedMinutes} min read</span>
                 </div>
 
-                {/* Medium Reader Comfort Controls (Font Size scaler) */}
-                <div className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-[#0c101d] light:bg-slate-100 border border-white/10 light:border-slate-300 shadow-xs">
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#4FD1D9] light:text-[#0D9488]">
-                    <BookOpen size={13} className="shrink-0" />
-                    <span>Medium Reading Mode</span>
-                  </div>
-
-                  <div className="w-px h-3.5 bg-white/10 light:bg-slate-300" />
-
-                  {/* Size Scaler */}
-                  <div className="flex items-center gap-0.5 font-mono text-[11px]">
-                    <button
-                      type="button"
-                      onClick={() => handleSetReadingSize('sm')}
-                      className={`px-2 py-0.5 rounded transition-all cursor-pointer ${
-                        readingSize === 'sm'
-                          ? 'bg-white/10 light:bg-slate-200 text-[#4FD1D9] light:text-[#0D9488] font-bold'
-                          : 'text-slate-400 hover:text-white light:hover:text-black'
-                      }`}
-                      title="Compact text (15.5px)"
-                    >
-                      A-
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSetReadingSize('base')}
-                      className={`px-2 py-0.5 rounded transition-all cursor-pointer ${
-                        readingSize === 'base'
-                          ? 'bg-white/10 light:bg-slate-200 text-[#4FD1D9] light:text-[#0D9488] font-bold'
-                          : 'text-slate-400 hover:text-white light:hover:text-black'
-                      }`}
-                      title="Medium Standard text (17.5px)"
-                    >
-                      A
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSetReadingSize('lg')}
-                      className={`px-2 py-0.5 rounded transition-all cursor-pointer ${
-                        readingSize === 'lg'
-                          ? 'bg-white/10 light:bg-slate-200 text-[#4FD1D9] light:text-[#0D9488] font-bold'
-                          : 'text-slate-400 hover:text-white light:hover:text-black'
-                      }`}
-                      title="Large comfortable text (19.5px)"
-                    >
-                      A+
-                    </button>
-                  </div>
+                {/* Font Size Scaler */}
+                <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-[#0c101d] light:bg-slate-100 border border-white/10 light:border-slate-300 font-mono text-[11px] shadow-xs">
+                  <button
+                    type="button"
+                    onClick={() => handleSetReadingSize('sm')}
+                    className={`px-2 py-0.5 rounded transition-all cursor-pointer ${
+                      readingSize === 'sm'
+                        ? 'bg-white/10 light:bg-slate-200 text-[#4FD1D9] light:text-[#0D9488] font-bold'
+                        : 'text-slate-400 hover:text-white light:hover:text-black'
+                    }`}
+                    title="Compact text (15.5px)"
+                  >
+                    A-
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSetReadingSize('base')}
+                    className={`px-2 py-0.5 rounded transition-all cursor-pointer ${
+                      readingSize === 'base'
+                        ? 'bg-white/10 light:bg-slate-200 text-[#4FD1D9] light:text-[#0D9488] font-bold'
+                        : 'text-slate-400 hover:text-white light:hover:text-black'
+                    }`}
+                    title="Standard text (17.5px)"
+                  >
+                    A
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSetReadingSize('lg')}
+                    className={`px-2 py-0.5 rounded transition-all cursor-pointer ${
+                      readingSize === 'lg'
+                        ? 'bg-white/10 light:bg-slate-200 text-[#4FD1D9] light:text-[#0D9488] font-bold'
+                        : 'text-slate-400 hover:text-white light:hover:text-black'
+                    }`}
+                    title="Large comfortable text (19.5px)"
+                  >
+                    A+
+                  </button>
                 </div>
               </div>
 
